@@ -2,9 +2,6 @@ DOCKER_USER := icij
 DOCKER_NAME := datashare-preview
 PWD := `pwd`
 
-install:
-	yarn
-
 docker-run:
 		docker run -it --rm \
 		-p 5000:5000 \
