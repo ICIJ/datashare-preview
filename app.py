@@ -27,7 +27,7 @@ def get_size_width(size):
 def get_preview_generator_params():
     file_path = request.args.get('file_path', None)
     size = request.args.get('size', 'xs')
-    page = request.args.get('page', 1)
+    page = request.args.get('page', 0)
     return dict(file_path=file_path, width=get_size_width(size), page=int(page))
 
 @app.route('/api/v1/thumbnail/')
