@@ -7,8 +7,7 @@ docker-run:
 		-p 5000:5000 \
 		-e DISPLAY=$(DISPLAY) \
 		-v $(PWD)/cache/:/var/www/app/cache/ \
-		-v /tmp/.X11-unix:/tmp/.X11-unix $(DOCKER_NAME) \
-		env FLASK_APP=app.py flask run --host=0.0.0.0
+		-v /tmp/.X11-unix:/tmp/.X11-unix $(DOCKER_NAME)
 
 docker-build:
 		docker build -t $(DOCKER_NAME) .
