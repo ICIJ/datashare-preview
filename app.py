@@ -4,6 +4,7 @@ from preview_generator.manager import PreviewManager
 from pathlib import Path
 
 app = Flask(__name__)
+sizes = dict(xs=80, sm=310, md=540, lg=720, xl=960)
 
 FILES_ROOT_PATH = os.environ.get('FILES_ROOT_PATH', './samples')
 CACHE_PATH = os.environ.get('CACHE_PATH', './cache')
@@ -13,16 +14,28 @@ def in_root_path(child_path):
     child = Path(child_path)
     return root in child.parents
 
-def get_jpeg_preview(file_to_preview_path, cache_path = CACHE_PATH):
+def get_jpeg_preview(params, cache_path = CACHE_PATH):
     manager = PreviewManager(cache_path, create_folder = True)
-    return manager.get_jpeg_preview(file_to_preview_path)
+    return manager.get_jpeg_preview(**params)
 
-@app.route('/api/v1/preview/')
+def get_size_width(size):
+    if str(size).isnumeric():
+        return int(size)
+    else:
+        return sizes.get(size, sizes.get('xs'))
+
+def get_preview_generator_params():
+    file_path = request.args.get('file_path', None)
+    size = request.args.get('size', 'xs')
+    page = request.args.get('page', 1)
+    return dict(file_path=file_path, width=get_size_width(size), page=int(page))
+
+@app.route('/api/v1/thumbnail/')
 def preview():
-    path = request.args.get('file', None)
+    params = get_preview_generator_params()
     # The file is not authorized
-    if path is None or not in_root_path(path): abort(401)
+    if params['file_path'] is None or not in_root_path(params['file_path']): abort(401)
     # If it not working, PreviewManager will raise an exception
-    try: return send_file(get_jpeg_preview(path), as_attachment=False)
+    try: return send_file(get_jpeg_preview(params), as_attachment=False)
     # Silently fail
     except Exception as e: abort(500, e)
