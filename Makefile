@@ -18,3 +18,5 @@ docker-tag:
 
 docker-push:
 		docker push $(DOCKER_USER)/$(DOCKER_NAME):$(DOCKER_TAG)
+
+docker-publish: docker-build docker-tag docker-push
