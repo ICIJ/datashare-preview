@@ -1,5 +1,6 @@
 DOCKER_USER := icij
 DOCKER_NAME := datashare-preview
+DOCKER_TAG := latest
 PWD := `pwd`
 
 docker-run:

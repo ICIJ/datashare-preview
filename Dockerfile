@@ -21,7 +21,8 @@ COPY . .
 RUN useradd -ms /bin/bash xterm
 USER xterm
 
-ENV FILES_ROOT_PATH /var/www/app/
+ENV FILES_ROOT_PATH /var/www/app/samples
 ENV CACHE_PATH /var/www/app/cache
+ENV FLASK_APP app.py
 
-CMD [ "python", "./app.py", "flask", "run"]
+CMD [ "flask", "run", "--host=0.0.0.0" ]
