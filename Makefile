@@ -1,7 +1,23 @@
 DOCKER_USER := icij
 DOCKER_NAME := datashare-preview
 DOCKER_TAG := latest
+VIRTUALENV := venv/
 PWD := `pwd`
+
+clean:
+		find . -name "*.pyc" -exec rm -rf {} \;
+
+install: install_virtualenv install_pip
+
+install_virtualenv:
+		# Check if venv folder is already created and create it
+		if [ ! -d venv ]; then virtualenv $(VIRTUALENV) --python=python3 --no-site-package --distribute; fi
+
+install_pip:
+		. $(VIRTUALENV)bin/activate; pip install -r requirements.txt
+
+run:
+		. venv/bin/activate; FLASK_ENV=development flask run --host=0.0.0.0 --port=9090 
 
 docker-run:
 		docker run -it --rm \
