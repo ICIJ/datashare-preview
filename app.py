@@ -53,7 +53,7 @@ def download_document(url):
     return target_path
 
 def get_preview_generator_params(index, id):
-    rounting = request.args.get('routing', None)
+    routing = request.args.get('routing', None)
     size = request.args.get('size', 'xs')
     page = request.args.get('page', 0)
     # Build the document URL
