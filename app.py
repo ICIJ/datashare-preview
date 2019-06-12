@@ -53,10 +53,13 @@ def download_document(url):
     return target_path
 
 def get_preview_generator_params(index, id):
-    document_url = get_document_url(index, id,request.args.get('routing', None))
-    file_path = download_document(document_url)
+    rounting = request.args.get('routing', None)
     size = request.args.get('size', 'xs')
     page = request.args.get('page', 0)
+    # Build the document URL
+    document_url = get_document_url(index, id, routing)
+    # Download the document and return the temporary filepath
+    file_path = download_document(document_url)
     return dict(file_path=file_path, width=get_size_width(size), page=int(page))
 
 @app.route('/api/v1/thumbnail/<string:index>/<string:id>', methods=['GET'])
