@@ -4,7 +4,7 @@ import requests
 from pathlib import Path
 from functools import lru_cache
 from tempfile import mktemp
-from flask import Flask, send_file, abort, request
+from flask import Flask, send_file, abort, request, jsonify
 from preview_generator.manager import PreviewManager
 from pathlib import Path
 from requests.compat import urljoin
@@ -63,11 +63,28 @@ def get_preview_generator_params(index, id):
     return dict(file_path=file_path, height=get_size_width(size), page=int(page))
 
 @app.route('/api/v1/thumbnail/<string:index>/<string:id>', methods=['GET'])
-def preview(index, id):
+@app.route('/api/v1/thumbnail/<string:index>/<string:id>.jpg', methods=['GET'])
+def thumbnail(index, id):
     params = get_preview_generator_params(index, id)
     # The file is not authorized
     if params['file_path'] is None: abort(401)
     # If it not working, PreviewManager will raise an exception
     try: return send_file(get_jpeg_preview(params), as_attachment=False)
+    # Silently fail
+    except Exception as e: abort(500, e)
+
+@app.route('/api/v1/thumbnail/<string:index>/<string:id>.json', methods=['GET'])
+def info(index, id):
+    params = get_preview_generator_params(index, id)
+    # The file is not authorized
+    if params['file_path'] is None: abort(401)
+    # If it not working, PreviewManager will raise an exception
+    try:
+        manager = PreviewManager(CACHE_PATH, create_folder = True)
+        return jsonify({
+            'pages': manager.get_page_nb(params['file_path']),
+            'minetype': manager.get_mimetype(params['file_path']),
+            'previewable': manager.has_jpeg_preview(params['file_path'])
+        })
     # Silently fail
     except Exception as e: abort(500, e)
