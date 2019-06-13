@@ -17,7 +17,7 @@ install_pip:
 		. $(VIRTUALENV)bin/activate; pip install -r requirements.txt
 
 run:
-		. venv/bin/activate; FLASK_ENV=development flask run --host=0.0.0.0 --port=9090 
+		. $(VIRTUALENV)bin/activate; FLASK_ENV=development flask run --host=0.0.0.0 --port=5050 
 
 docker-run:
 		docker run -it --rm \

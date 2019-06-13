@@ -60,7 +60,7 @@ def get_preview_generator_params(index, id):
     document_url = get_document_url(index, id, routing)
     # Download the document and return the temporary filepath
     file_path = download_document(document_url)
-    return dict(file_path=file_path, width=get_size_width(size), page=int(page))
+    return dict(file_path=file_path, height=get_size_width(size), page=int(page))
 
 @app.route('/api/v1/thumbnail/<string:index>/<string:id>', methods=['GET'])
 def preview(index, id):
