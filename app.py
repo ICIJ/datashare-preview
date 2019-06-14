@@ -5,6 +5,7 @@ from pathlib import Path
 from functools import lru_cache
 from tempfile import mktemp
 from flask import Flask, send_file, abort, request, jsonify
+from flask_cors import CORS
 from preview_generator.manager import PreviewManager
 from pathlib import Path
 from requests.compat import urljoin
@@ -13,8 +14,10 @@ CACHE_PATH = os.environ.get('CACHE_PATH', './cache')
 DS_HOST = os.environ.get('DS_HOST', 'http://localhost:8080')
 DS_DOCUMENT_PATH = os.environ.get('DS_DOCUMENT_PATH', '/api/index/src/%s/%s')
 
-app = Flask(__name__)
 sizes = dict(xs=80, sm=310, md=540, lg=720, xl=960)
+
+app = Flask(__name__)
+CORS(app)
 
 def get_jpeg_preview(params, cache_path = CACHE_PATH):
     manager = PreviewManager(cache_path, create_folder = True)
