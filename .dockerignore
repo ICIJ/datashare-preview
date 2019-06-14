@@ -8,5 +8,6 @@ __pycache__
 build
 dist
 .env
-.cache
 .git
+.cache
+cache
