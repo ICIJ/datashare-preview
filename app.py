@@ -32,24 +32,24 @@ def get_document_url(index, id, routing = None):
     if routing is not None: url = urljoin(url, '?routing=%s' % routing)
     return url
 
-def download_document_with_steam(url):
+def download_document_with_steam(url, cookies):
     target_path = mktemp()
-    response = requests.get(url, stream=True, cookies=request.cookies)
+    response = requests.get(url, stream=True, cookies=cookies)
     handle = open(target_path, "wb")
     for chunk in response.iter_content(chunk_size=1024):
         if chunk: handle.write(chunk)
     return target_path
 
 @lru_cache()
-def download_document_once(url):
-    return download_document_with_steam(url)
+def download_document_once(url, cookies):
+    return download_document_with_steam(url, cookies)
 
-def download_document(url):
-    target_path = download_document_once(url)
+def download_document(url, cookies):
+    target_path = download_document_once(url, cookies)
     # Ensure the file style exist
     if not Path(target_path).exists():
         download_document_once.cache_clear()
-        target_path = download_document_once(url)
+        target_path = download_document_once(url, cookies)
     return target_path
 
 def get_preview_generator_params(index, id):
@@ -59,7 +59,7 @@ def get_preview_generator_params(index, id):
     # Build the document URL
     document_url = get_document_url(index, id, routing)
     # Download the document and return the temporary filepath
-    file_path = download_document(document_url)
+    file_path = download_document(document_url, request.cookies)
     return dict(file_path=file_path, height=get_size_width(size), page=int(page))
 
 @app.route('/api/v1/thumbnail/<string:index>/<string:id>', methods=['GET'])
