@@ -21,14 +21,14 @@ run:
 
 minor:
 		$(SET_CURRENT_VERSION)
-		. $(VIRTUALENV)bin/activate; bumpversion --commit --current-version ${CURRENT_VERSION} minor _version.py
+		. $(VIRTUALENV)bin/activate; bumpversion --commit --tag --current-version ${CURRENT_VERSION} minor _version.py
 
 major:
 		$(SET_CURRENT_VERSION)
-		. $(VIRTUALENV)bin/activate; bumpversion --commit --current-version ${CURRENT_VERSION} major _version.py
+		. $(VIRTUALENV)bin/activate; bumpversion --commit --tag --current-version ${CURRENT_VERSION} major _version.py
 
 patch:
-		. $(VIRTUALENV)bin/activate; bumpversion --commit --current-version ${CURRENT_VERSION} patch _version.py
+		. $(VIRTUALENV)bin/activate; bumpversion --commit --tag --current-version ${CURRENT_VERSION} patch _version.py
 
 docker-run:
 		docker run -it --rm \
