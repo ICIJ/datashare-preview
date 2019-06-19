@@ -40,7 +40,6 @@ def get_document_url(index, id, routing = None):
 
 def download_document_with_steam(url, cookies):
     target_path = mktemp()
-    print(cookies)
     response = requests.get(url, stream=True, cookies=cookies)
     handle = open(target_path, "wb")
     for chunk in response.iter_content(chunk_size=1024):
