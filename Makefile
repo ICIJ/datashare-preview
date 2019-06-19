@@ -3,6 +3,7 @@ DOCKER_NAME := datashare-preview
 DOCKER_TAG := latest
 VIRTUALENV := venv/
 PWD := `pwd`
+CURRENT_VERSION := $(shell python -c "from _version import __version__ ; print(__version__)")
 
 clean:
 		find . -name "*.pyc" -exec rm -rf {} \;
@@ -17,7 +18,16 @@ install_pip:
 		. $(VIRTUALENV)bin/activate; pip install -r requirements.txt
 
 run:
-		. $(VIRTUALENV)bin/activate; FLASK_ENV=development flask run --host=0.0.0.0 --port=5050 
+		. $(VIRTUALENV)bin/activate; FLASK_ENV=development flask run --host=0.0.0.0 --port=5050
+
+minor:
+		. $(VIRTUALENV)bin/activate; bumpversion --current-version $(CURRENT_VERSION) minor _version.py
+
+major:
+		. $(VIRTUALENV)bin/activate; bumpversion --current-version $(CURRENT_VERSION) major _version.py
+
+patch:
+		. $(VIRTUALENV)bin/activate; bumpversion --current-version $(CURRENT_VERSION) patch _version.py
 
 docker-run:
 		docker run -it --rm \

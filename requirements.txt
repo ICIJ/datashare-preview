@@ -2,3 +2,4 @@ preview-generator
 Flask==1.0.2
 flask-cors
 requests
+bumpversion
