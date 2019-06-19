@@ -1,9 +1,8 @@
 DOCKER_USER := icij
 DOCKER_NAME := datashare-preview
-DOCKER_TAG := latest
 VIRTUALENV := venv/
 PWD := `pwd`
-CURRENT_VERSION := $(shell python -c "from _version import __version__ ; print(__version__)")
+CURRENT_VERSION ?= `python -c "from _version import __version__ ; print(__version__)"`
 
 clean:
 		find . -name "*.pyc" -exec rm -rf {} \;
@@ -21,13 +20,15 @@ run:
 		. $(VIRTUALENV)bin/activate; FLASK_ENV=development flask run --host=0.0.0.0 --port=5050
 
 minor:
-		. $(VIRTUALENV)bin/activate; bumpversion --current-version $(CURRENT_VERSION) minor _version.py
+		$(SET_CURRENT_VERSION)
+		. $(VIRTUALENV)bin/activate; bumpversion --commit --current-version ${CURRENT_VERSION} minor _version.py
 
 major:
-		. $(VIRTUALENV)bin/activate; bumpversion --current-version $(CURRENT_VERSION) major _version.py
+		$(SET_CURRENT_VERSION)
+		. $(VIRTUALENV)bin/activate; bumpversion --commit --current-version ${CURRENT_VERSION} major _version.py
 
 patch:
-		. $(VIRTUALENV)bin/activate; bumpversion --current-version $(CURRENT_VERSION) patch _version.py
+		. $(VIRTUALENV)bin/activate; bumpversion --commit --current-version ${CURRENT_VERSION} patch _version.py
 
 docker-run:
 		docker run -it --rm \
@@ -40,9 +41,9 @@ docker-build:
 		docker build -t $(DOCKER_NAME) .
 
 docker-tag:
-		docker tag $(DOCKER_NAME) $(DOCKER_USER)/$(DOCKER_NAME):$(DOCKER_TAG)
+		docker tag $(DOCKER_NAME) $(DOCKER_USER)/$(DOCKER_NAME):${CURRENT_VERSION}
 
 docker-push:
-		docker push $(DOCKER_USER)/$(DOCKER_NAME):$(DOCKER_TAG)
+		docker push $(DOCKER_USER)/$(DOCKER_NAME):${CURRENT_VERSION}
 
 docker-publish: docker-build docker-tag docker-push
