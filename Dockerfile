@@ -19,7 +19,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 RUN useradd -ms /bin/bash xterm
-RUN mkdir -m 777 cache
 
 USER xterm
 

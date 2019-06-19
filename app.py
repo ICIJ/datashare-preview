@@ -9,10 +9,13 @@ from flask_cors import CORS
 from preview_generator.manager import PreviewManager
 from pathlib import Path
 from requests.compat import urljoin
+from utils import hash_dict
 
 CACHE_PATH = os.environ.get('CACHE_PATH', './cache')
 DS_HOST = os.environ.get('DS_HOST', 'http://localhost:8080')
 DS_DOCUMENT_PATH = os.environ.get('DS_DOCUMENT_PATH', '/api/index/src/%s/%s')
+DS_SESSION_COOKIE_NAME = '_ds_session_id'
+DS_SESSION_HEADER_NAME = 'X-Ds-Session-Id'
 
 sizes = dict(xs=80, sm=310, md=540, lg=720, xl=960)
 
@@ -37,12 +40,14 @@ def get_document_url(index, id, routing = None):
 
 def download_document_with_steam(url, cookies):
     target_path = mktemp()
+    print(cookies)
     response = requests.get(url, stream=True, cookies=cookies)
     handle = open(target_path, "wb")
     for chunk in response.iter_content(chunk_size=1024):
         if chunk: handle.write(chunk)
     return target_path
 
+@hash_dict
 @lru_cache()
 def download_document_once(url, cookies):
     return download_document_with_steam(url, cookies)
@@ -55,6 +60,21 @@ def download_document(url, cookies):
         target_path = download_document_once(url, cookies)
     return target_path
 
+def has_session_cookie():
+    return DS_SESSION_COOKIE_NAME in request.cookies
+
+def has_session_header():
+    return DS_SESSION_HEADER_NAME in request.headers
+
+def get_cookies_from_forwarded_headers():
+    cookies = request.cookies.copy()
+    # DS_SESSION_COOKIE_NAME is present? Just return the request cookies
+    if not has_session_cookie() and has_session_header():
+        # Look for DS_SESSION_HEADER_NAME in the request header to build cookies
+        cookies = dict()
+        cookies[DS_SESSION_COOKIE_NAME] = request.headers.get(DS_SESSION_HEADER_NAME, '')
+    return cookies
+
 def get_preview_generator_params(index, id):
     routing = request.args.get('routing', None)
     size = request.args.get('size', 'xs')
@@ -62,7 +82,7 @@ def get_preview_generator_params(index, id):
     # Build the document URL
     document_url = get_document_url(index, id, routing)
     # Download the document and return the temporary filepath
-    file_path = download_document(document_url, request.cookies)
+    file_path = download_document(document_url, get_cookies_from_forwarded_headers())
     return dict(file_path=file_path, height=get_size_width(size), page=int(page))
 
 @app.route('/api/v1/thumbnail/<string:index>/<string:id>', methods=['GET'])
