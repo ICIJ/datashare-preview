@@ -20,11 +20,9 @@ run:
 		. $(VIRTUALENV)bin/activate; FLASK_ENV=development flask run --host=0.0.0.0 --port=5050
 
 minor:
-		$(SET_CURRENT_VERSION)
 		. $(VIRTUALENV)bin/activate; bumpversion --commit --tag --current-version ${CURRENT_VERSION} minor _version.py
 
 major:
-		$(SET_CURRENT_VERSION)
 		. $(VIRTUALENV)bin/activate; bumpversion --commit --tag --current-version ${CURRENT_VERSION} major _version.py
 
 patch:
