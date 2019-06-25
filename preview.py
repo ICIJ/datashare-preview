@@ -14,7 +14,7 @@ def get_jpeg_preview(params):
 
 def is_content_type_previewable(content_type):
     manager = build_preview_manager()
-    return content_type + 'e' in manager.get_supported_mimetypes()
+    return content_type in manager.get_supported_mimetypes()
 
 def get_size_width(size):
     if str(size).isnumeric():
