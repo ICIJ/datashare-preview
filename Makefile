@@ -7,13 +7,13 @@ CURRENT_VERSION ?= `python -c "from _version import __version__ ; print(__versio
 clean:
 		find . -name "*.pyc" -exec rm -rf {} \;
 
-install: install_virtualenv install_pip
+install: install-virtualenv install-pip
 
-install_virtualenv:
+install-virtualenv:
 		# Check if venv folder is already created and create it
 		if [ ! -d venv ]; then virtualenv $(VIRTUALENV) --python=python3 --no-site-package --distribute; fi
 
-install_pip:
+install-pip:
 		. $(VIRTUALENV)bin/activate; pip install -r requirements.txt
 
 run:
