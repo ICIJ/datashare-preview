@@ -49,7 +49,6 @@ def thumbnail(index, id):
     except DocumentTooBig: abort(509)
     except DocumentNotPreviewable: abort(403)
     except DocumentUnauthorized: abort(401)
-    except Exception: abort(500)
 
 @app.route('/api/v1/thumbnail/<string:index>/<string:id>.json', methods=['GET'])
 def info(index, id):
@@ -62,4 +61,3 @@ def info(index, id):
         return jsonify({ 'pages': 0, 'previewable': False })
     except DocumentTooBig: abort(509)
     except DocumentUnauthorized: abort(401)
-    except Exception: abort(500)
