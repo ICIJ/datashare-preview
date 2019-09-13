@@ -23,6 +23,7 @@ def get_cookies_from_forwarded_headers(request):
     if not has_session_cookie(request) and has_session_header(request):
         cookies = dict()
         cookies[DS_SESSION_COOKIE_NAME] = request.headers.get(DS_SESSION_HEADER_NAME, '')
+        return cookies
     return request.cookies
 
 
