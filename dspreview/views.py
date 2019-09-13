@@ -1,6 +1,6 @@
 import pkg_resources
 from pyramid.httpexceptions import exception_response
-from pyramid.response import Response
+from pyramid.response import Response, FileResponse
 from pyramid.view import view_config
 
 from dspreview.document import DocumentTooBig, DocumentNotPreviewable, DocumentUnauthorized, delete_expired_documents, \
@@ -20,17 +20,16 @@ def has_session_header(request):
 
 
 def get_cookies_from_forwarded_headers(request):
-    cookies = request.cookies.copy()
     if not has_session_cookie(request) and has_session_header(request):
         cookies = dict()
         cookies[DS_SESSION_COOKIE_NAME] = request.headers.get(DS_SESSION_HEADER_NAME, '')
-    return cookies
+    return request.cookies
 
 
 def get_preview_generator_params(request):
-    routing = request.args.get('routing', None)
-    size = request.args.get('size', 'xs')
-    page = request.args.get('page', 0)
+    routing = request.GET.get('routing', None)
+    size = request.GET.get('size', 'xs')
+    page = request.GET.get('page', 0)
     cookies = get_cookies_from_forwarded_headers(request)
     delete_expired_documents()
     check_user_authorization(request.matchdict['index'], request.matchdict['id'], routing, cookies)
@@ -53,7 +52,7 @@ def thumbnail_options(request):
 def thumbnail(request):
     try:
         params = get_preview_generator_params(request)
-        return Response(content_type='image/jpeg', body=get_jpeg_preview(params))
+        return FileResponse(get_jpeg_preview(params), content_type='image/jpeg')
     except DocumentTooBig:
         raise exception_response(509)
     except DocumentNotPreviewable:
