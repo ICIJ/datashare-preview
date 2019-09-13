@@ -44,6 +44,11 @@ def home(_):
                     body='Datashare preview v%s' % pkg_resources.get_distribution("datashare_preview").version)
 
 
+@view_config(route_name='thumbnail_options')
+def thumbnail_options(request):
+    return Response()
+
+
 @view_config(route_name='thumbnail')
 def thumbnail(request):
     try:
@@ -55,6 +60,11 @@ def thumbnail(request):
         raise exception_response(403)
     except DocumentUnauthorized:
         raise exception_response(401)
+
+
+@view_config(route_name='info_options')
+def info_options(request):
+    return Response()
 
 
 @view_config(route_name='info', renderer='json')

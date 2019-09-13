@@ -17,7 +17,8 @@ dev_requires = [
     'nose',
     'bumpversion',
     'pyramid-debugtoolbar',
-    'pyramid-exclog'
+    'pyramid-exclog',
+    'webtest'
 ]
 
 setup(name='datashare-preview',
