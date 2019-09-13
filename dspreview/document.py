@@ -56,11 +56,11 @@ def delete_expired_documents():
 
 def download_document_with_steam(url, target_path, cookies):
     response = requests.get(url, stream=True, cookies=cookies)
-    handle = open(target_path, "wb")
-    for chunk in response.iter_content(chunk_size=1024):
-        if chunk:
-            handle.write(chunk)
-    return target_path
+    with open(target_path, "wb") as file:
+        for chunk in response.iter_content(chunk_size=1024):
+            if chunk:
+                file.write(chunk)
+        return target_path
 
 
 def download_document(index, id, routing, cookies):
