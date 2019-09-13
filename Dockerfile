@@ -1,7 +1,5 @@
 FROM python:3.7
 
-ARG DSPREVIEW_VERSION
-
 RUN apt-get update && apt-get install -y zlib1g-dev libjpeg-dev xterm \
   scribus libreoffice inkscape xvfb qpdf \
   python3-pythonmagick poppler-utils libfile-mimeinfo-perl
@@ -14,6 +12,7 @@ RUN gzip -dc Image-ExifTool-11.11.tar.gz | tar -xf - ; \
   perl Makefile.PL ; \
   make install
 
+ARG DSPREVIEW_VERSION
 WORKDIR /var/www/app
 COPY conf/production.ini .
 COPY dist/datashare-preview-$DSPREVIEW_VERSION.tar.gz .
