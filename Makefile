@@ -2,7 +2,7 @@ DOCKER_USER := icij
 DOCKER_NAME := datashare-preview
 VIRTUALENV := venv/
 PWD := `pwd`
-CURRENT_VERSION ?= `python -c "from dspreview._version import __version__ ; print(__version__)"`
+CURRENT_VERSION ?= `python setup.py --version`
 
 clean:
 		find . -name "*.pyc" -exec rm -rf {} \;
@@ -24,13 +24,13 @@ run:
 		. $(VIRTUALENV)bin/activate; FLASK_ENV=development flask run --host=0.0.0.0 --port=5050
 
 minor:
-		. $(VIRTUALENV)bin/activate; bumpversion --commit --tag --current-version ${CURRENT_VERSION} minor dspreview/_version.py
+		. $(VIRTUALENV)bin/activate; bumpversion --commit --tag --current-version ${CURRENT_VERSION} minor setup.py
 
 major:
-		. $(VIRTUALENV)bin/activate; bumpversion --commit --tag --current-version ${CURRENT_VERSION} major dspreview/_version.py
+		. $(VIRTUALENV)bin/activate; bumpversion --commit --tag --current-version ${CURRENT_VERSION} major setup.py
 
 patch:
-		. $(VIRTUALENV)bin/activate; bumpversion --commit --tag --current-version ${CURRENT_VERSION} patch dspreview/_version.py
+		. $(VIRTUALENV)bin/activate; bumpversion --commit --tag --current-version ${CURRENT_VERSION} patch setup.py
 
 docker-run:
 		docker run -it --rm \
