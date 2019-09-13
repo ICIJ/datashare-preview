@@ -1,4 +1,0 @@
-nose
-bumpversion
-pyramid-debugtoolbar
-pyramid-exclog

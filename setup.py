@@ -13,6 +13,13 @@ requires = [
     'requests==2.22.0'
 ]
 
+dev_requires = [
+    'nose',
+    'bumpversion',
+    'pyramid-debugtoolbar',
+    'pyramid-exclog'
+]
+
 setup(name='datashare-preview',
       version='0.2.0',
       description="App to show document previews with a backend Elasticsearch",
@@ -32,6 +39,9 @@ setup(name='datashare-preview',
       include_package_data=True,
       zip_safe=False,
       install_requires=requires,
+      extras_require={
+        'dev': dev_requires,
+      },
       test_suite="nose.collector",
       entry_points={
         'paste.app_factory': [

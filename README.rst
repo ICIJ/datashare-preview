@@ -14,7 +14,7 @@ To develop, just run::
     virtualenv --python=python3 venv
     source venv/bin/activate
     python setup.py develop
-    pip install -r dev-requirements.txt
+    pip install -e ".[dev]"
     nosetests
 
 To run the server::
