@@ -6,8 +6,12 @@ CURRENT_VERSION ?= `python -c "from _version import __version__ ; print(__versio
 
 clean:
 		find . -name "*.pyc" -exec rm -rf {} \;
+		rm -rf dist *.egg-info __pycache__
 
 install: install-virtualenv install-pip
+
+dist:
+		python setup.py sdist
 
 install-virtualenv:
 		# Check if venv folder is already created and create it
@@ -35,8 +39,8 @@ docker-run:
 		-v $(PWD)/cache/:/var/www/app/cache/ \
 		-v /tmp/.X11-unix:/tmp/.X11-unix $(DOCKER_NAME)
 
-docker-build:
-		docker build -t $(DOCKER_NAME) .
+docker-build: dist
+		docker build --build-arg DSPREVIEW_VERSION=$(CURRENT_VERSION) -t $(DOCKER_NAME) .
 
 docker-tag:
 		docker tag $(DOCKER_NAME) $(DOCKER_USER)/$(DOCKER_NAME):${CURRENT_VERSION}
@@ -45,3 +49,4 @@ docker-push:
 		docker push $(DOCKER_USER)/$(DOCKER_NAME):${CURRENT_VERSION}
 
 docker-publish: docker-build docker-tag docker-push
+
