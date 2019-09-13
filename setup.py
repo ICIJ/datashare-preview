@@ -7,10 +7,10 @@ with open(os.path.join(here, 'README.rst')) as f:
     README = f.read()
 
 requires = [
-    'preview-generator',
+    'preview-generator==0.11',
     'pyramid==1.10',
     'waitress==1.3.1',
-    'requests'
+    'requests==2.22.0'
 ]
 
 setup(name='datashare-preview',
