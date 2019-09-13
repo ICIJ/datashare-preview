@@ -16,9 +16,6 @@ DS_DOCUMENT_SRC_PATH = os.environ.get('DS_DOCUMENT_SRC_PATH', '/api/index/src/%s
 DS_DOCUMENT_MAX_SIZE = 50e6 # 50 Mo
 DS_DOCUMENT_MAX_AGE = 60 * 60 * 3 # 3 hours
 
-class DocumentUnauthorized(Exception): pass
-class DocumentNotPreviewable(Exception): pass
-class DocumentTooBig(Exception): pass
 
 def build_document_meta_url(index, id, routing = None):
     url = urljoin(DS_HOST, DS_DOCUMENT_META_PATH % (index, id))
@@ -26,29 +23,36 @@ def build_document_meta_url(index, id, routing = None):
     if routing is not None: url = urljoin(url, '?_source=contentLength,contentType&routing=%s' % routing)
     return url
 
+
 def build_document_src_url(index, id, routing = None):
     url = urljoin(DS_HOST, DS_DOCUMENT_SRC_PATH % (index, id))
     # Optional routing parameter
     if routing is not None: url = urljoin(url, '?routing=%s' % routing)
     return url
 
+
 def build_document_target_path(index, id, routing = None):
     file_name = '%s-%s-%s' % (DS_FILE_PREFIX, index, id)
     return os.path.join(CACHE_PATH, file_name)
 
+
 def get_file_age(file):
     return datetime.now().timestamp() - os.path.getmtime(file)
 
+
 def is_file_expired(file):
     return get_file_age(file) > DS_DOCUMENT_MAX_AGE
+
 
 def expired_documents():
     files = glob(os.path.join(CACHE_PATH, '%s*' % DS_FILE_PREFIX))
     return [ file for file in files if is_file_expired(file) ]
 
+
 def delete_expired_documents():
     for file_path in expired_documents():
         os.remove(file_path)
+
 
 def download_document_with_steam(url, target_path, cookies):
     response = requests.get(url, stream=True, cookies=cookies)
@@ -58,6 +62,7 @@ def download_document_with_steam(url, target_path, cookies):
             handle.write(chunk)
     return target_path
 
+
 def download_document(index, id, routing, cookies):
     # Build the document URL
     url = build_document_src_url(index, id, routing)
@@ -66,6 +71,7 @@ def download_document(index, id, routing, cookies):
     if not Path(target_path).exists():
         download_document_with_steam(url, target_path, cookies)
     return target_path
+
 
 def check_user_authorization(index, id, routing, cookies):
     url = build_document_meta_url(index, id, routing)
@@ -79,3 +85,15 @@ def check_user_authorization(index, id, routing, cookies):
     if not is_content_type_previewable(content_type): raise DocumentNotPreviewable()
     # Raise exception if the contentType is not previewable
     if content_length > DS_DOCUMENT_MAX_SIZE: raise DocumentTooBig()
+
+
+class DocumentUnauthorized(Exception):
+    pass
+
+
+class DocumentNotPreviewable(Exception):
+    pass
+
+
+class DocumentTooBig(Exception):
+    pass

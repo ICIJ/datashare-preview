@@ -1,5 +1,6 @@
 from functools import wraps
 
+
 def hash_dict(func):
     """Transform mutable dictionnary
     Into immutable
