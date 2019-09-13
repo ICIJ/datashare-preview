@@ -8,10 +8,8 @@ with open(os.path.join(here, 'README.rst')) as f:
 
 requires = [
     'preview-generator',
-    'Flask==1.0.2',
     'pyramid==1.10',
     'waitress==1.3.1',
-    'flask-cors',
     'requests'
 ]
 

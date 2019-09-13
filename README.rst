@@ -19,4 +19,4 @@ To develop, just run::
 
 To run the server::
 
-    pserve develoment.ini
+    pserve conf/development.ini

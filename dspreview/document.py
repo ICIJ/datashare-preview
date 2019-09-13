@@ -6,7 +6,7 @@ from datetime import datetime
 from tempfile import gettempdir
 from glob import glob
 from pathlib import Path
-from preview import is_content_type_previewable
+from dspreview.preview import is_content_type_previewable
 
 CACHE_PATH = os.environ.get('CACHE_PATH', gettempdir())
 DS_HOST = os.environ.get('DS_HOST', 'http://localhost:8080')

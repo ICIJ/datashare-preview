@@ -15,7 +15,7 @@ RUN gzip -dc Image-ExifTool-11.11.tar.gz | tar -xf - ; \
   make install
 
 WORKDIR /var/www/app
-COPY production.ini .
+COPY conf/production.ini .
 COPY dist/datashare-preview-$DSPREVIEW_VERSION.tar.gz .
 RUN pip install datashare-preview-$DSPREVIEW_VERSION.tar.gz
 
