@@ -4,11 +4,13 @@ jobs:
     docker:
       - image: circleci/python:3.6.4
 
-  steps:
-    - run:
-        command: |
-          virtualenv --python=python3 venv
-          source venv/bin/activate
-          python setup.py develop
-          pip install -e ".[dev]"
-          nosetests
+    steps:
+      - checkout
+      - run:
+          command: |
+            sudo pip install virtualenv
+            virtualenv --python=python3 venv
+            source venv/bin/activate
+            python setup.py develop
+            pip install -e ".[dev]"
+            nosetests
