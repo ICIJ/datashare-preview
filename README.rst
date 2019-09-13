@@ -1,6 +1,10 @@
 About
 =====
 
+.. image:: https://circleci.com/gh/ICIJ/datashare-preview.png?style=shield&circle-token=7e42b81871950349431631c84419e83797b9d1c2
+   :alt: Circle CI
+   :target: https://circleci.com/gh/ICIJ/datashare-preview
+
 This is an application that will take documents hashes/routing information as input
 and serve previews/thumbnails for these documents.
 
