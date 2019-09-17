@@ -22,11 +22,10 @@ def main(global_config, **settings):
     config = Configurator(settings=settings)
 
     config.add_route('home', '/', request_method='GET')
-    config.add_route('thumbnail', '/api/v1/thumbnail/{index}/{id}', request_method='GET')
-    config.add_route('thumbnail_options', '/api/v1/thumbnail/{index}/{id}', request_method='OPTIONS')
-    #  config.add_route('thumbnail', '/api/v1/thumbnail/<string:index>/<string:id>.jpg', methods=['GET'])
     config.add_route('info', '/api/v1/thumbnail/{index}/{id}.json', request_method='GET')
     config.add_route('info_options', '/api/v1/thumbnail/{index}/{id}.json', request_method='OPTIONS')
+    config.add_route('thumbnail', '/api/v1/thumbnail/{index}/{id}', request_method='GET')
+    config.add_route('thumbnail_options', '/api/v1/thumbnail/{index}/{id}', request_method='OPTIONS')
 
     config.add_subscriber(add_cors_headers_response_callback, NewRequest)
 
