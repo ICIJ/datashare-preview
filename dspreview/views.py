@@ -1,3 +1,6 @@
+import logging
+from os.path import splitext
+
 import pkg_resources
 from pyramid.httpexceptions import exception_response
 from pyramid.response import Response, FileResponse
@@ -6,6 +9,8 @@ from pyramid.view import view_config
 from dspreview.document import DocumentTooBig, DocumentNotPreviewable, DocumentUnauthorized, delete_expired_documents, \
     check_user_authorization, download_document
 from dspreview.preview import get_jpeg_preview, build_preview_manager, get_size_width
+
+log = logging.getLogger(__name__)
 
 DS_SESSION_COOKIE_NAME = '_ds_session_id'
 DS_SESSION_HEADER_NAME = 'X-Ds-Session-Id'
@@ -33,9 +38,9 @@ def get_preview_generator_params(request):
     page = request.GET.get('page', 0)
     cookies = get_cookies_from_forwarded_headers(request)
     delete_expired_documents()
-    check_user_authorization(request.matchdict['index'], request.matchdict['id'], routing, cookies)
+    es_json = check_user_authorization(request.matchdict['index'], request.matchdict['id'], routing, cookies)
     file_path = download_document(request.matchdict['index'], request.matchdict['id'], routing, cookies)
-    return dict(file_path=file_path, height=get_size_width(size), page=int(page))
+    return dict(file_path=file_path, height=get_size_width(size), page=int(page), file_ext=splitext(es_json.get('_source').get('path'))[1])
 
 
 @view_config(route_name='home')

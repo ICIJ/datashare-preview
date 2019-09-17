@@ -1,3 +1,4 @@
+import logging
 import os
 import requests
 
@@ -20,7 +21,7 @@ DS_DOCUMENT_MAX_AGE = 60 * 60 * 24 * 7 # 7 days
 def build_document_meta_url(index, id, routing = None):
     url = urljoin(DS_HOST, DS_DOCUMENT_META_PATH % (index, id))
     # Optional routing parameter
-    if routing is not None: url = urljoin(url, '?_source=contentLength,contentType&routing=%s' % routing)
+    if routing is not None: url = urljoin(url, '?_source=contentLength,contentType,path&routing=%s' % routing)
     return url
 
 
@@ -79,12 +80,14 @@ def check_user_authorization(index, id, routing, cookies):
     # Raise exception if the document request didn't succeed
     if response.status_code == 401: raise DocumentUnauthorized()
     # Find the content type and content length in nested attributes
-    content_type = response.json().get('_source', {}).get('contentType', None)
-    content_length = response.json().get('_source', {}).get('contentLength', 0)
+    json_response = response.json()
+    content_type = json_response.get('_source', {}).get('contentType', None)
+    content_length = json_response.get('_source', {}).get('contentLength', 0)
     # Raise exception if the contentType is not previewable
     if not is_content_type_previewable(content_type): raise DocumentNotPreviewable()
     # Raise exception if the contentType is not previewable
     if content_length > DS_DOCUMENT_MAX_SIZE: raise DocumentTooBig()
+    return json_response
 
 
 class DocumentUnauthorized(Exception):
