@@ -15,7 +15,7 @@ jobs:
       - run:
           name: install dependencies
           command: |
-            sudo apt-get install exiftool
+            sudo apt-get install exiftool libfile-mimeinfo-perl
             python3 -m venv venv
             . venv/bin/activate
             pip install xvfbwrapper

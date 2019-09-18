@@ -1,11 +1,13 @@
 import json
+import os
 import unittest
 from concurrent.futures import ThreadPoolExecutor
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from shutil import copyfile
 
 
-def create_file_ondisk(path):
-    pass
+def create_jpeg_ondisk(path):
+    copyfile(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../resources/dummy.jpg'), path)
 
 
 class ViewIntegrationTest(unittest.TestCase):
@@ -43,14 +45,17 @@ class ViewIntegrationTest(unittest.TestCase):
         self.assertEqual(response.status, '401 Unauthorized')
 
     def test_thumbnail_with_cookie(self):
+        create_jpeg_ondisk('/tmp/ds-preview--index-id')
         response = self.app.get('/api/v1/thumbnail/index/id', headers=auth_headers())
         self.assertEqual(response.status, '200 OK')
 
     def test_thumbnail_with_header(self):
+        create_jpeg_ondisk('/tmp/ds-preview--index-id')
         response = self.app.get('/api/v1/thumbnail/index/id', headers=auth_headers())
         self.assertEqual(response.status, '200 OK')
 
     def test_info_json(self):
+        create_jpeg_ondisk('/tmp/ds-preview--index-id')
         response = self.app.get('/api/v1/thumbnail/index/id.json', headers=auth_headers())
         self.assertEqual(response.status, '200 OK')
         self.assertEqual(response.headers['Content-Type'], 'application/json')
