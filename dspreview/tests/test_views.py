@@ -1,3 +1,4 @@
+import json
 import unittest
 from concurrent.futures import ThreadPoolExecutor
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -42,17 +43,27 @@ class ViewIntegrationTest(unittest.TestCase):
         self.assertEqual(response.status, '401 Unauthorized')
 
     def test_thumbnail_with_cookie(self):
-        response = self.app.get('/api/v1/thumbnail/index/id', headers={'Cookie': '_ds_session_id={"login":"userid","roles":[],"sessionId":"eb43162397eddfb31da1255dcb16643c","redirectAfterLogin":"/"}'})
+        response = self.app.get('/api/v1/thumbnail/index/id', headers=auth_headers())
         self.assertEqual(response.status, '200 OK')
 
     def test_thumbnail_with_header(self):
-        response = self.app.get('/api/v1/thumbnail/index/id', headers={'X-Ds-Session-Id': '{"login":"userid","roles":[],"sessionId":"eb43162397eddfb31da1255dcb16643c","redirectAfterLogin":"/"}'})
+        response = self.app.get('/api/v1/thumbnail/index/id', headers=auth_headers())
         self.assertEqual(response.status, '200 OK')
+
+    def test_info_json(self):
+        response = self.app.get('/api/v1/thumbnail/index/id.json', headers=auth_headers())
+        self.assertEqual(response.status, '200 OK')
+        self.assertEqual(response.headers['Content-Type'], 'application/json')
+        self.assertEqual(json.loads(response.body.decode()), {"previewable": True, "pages": 1})
 
     def _assert_cors_headers_ok(self, response):
         self.assertEqual('*', response.headers.get('Access-Control-Allow-Origin'))
         self.assertEqual('GET', response.headers.get('Access-Control-Allow-Methods'))
         self.assertEqual('x-ds-session-id', response.headers.get('Access-Control-Allow-Headers'))
+
+
+def auth_headers():
+    return {'Cookie': '_ds_session_id={"login":"userid","roles":[],"sessionId":"sid","redirectAfterLogin":"/"}'}
 
 
 class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
