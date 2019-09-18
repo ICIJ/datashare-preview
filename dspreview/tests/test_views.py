@@ -41,13 +41,13 @@ class ViewIntegrationTest(unittest.TestCase):
         response = self.app.get('/api/v1/thumbnail/index/id', expect_errors=True)
         self.assertEqual(response.status, '401 Unauthorized')
 
-    # def test_thumbnail_with_cookie(self):
-    #     response = self.app.get('/api/v1/thumbnail/index/id', headers={'Cookie': '_ds_session_id={"login":"userid","roles":[],"sessionId":"eb43162397eddfb31da1255dcb16643c","redirectAfterLogin":"/"}'})
-    #     self.assertEqual(response.status, '200 OK')
-    #
-    # def test_thumbnail_with_header(self):
-    #     response = self.app.get('/api/v1/thumbnail/index/id', headers={'X-Ds-Session-Id': '{"login":"userid","roles":[],"sessionId":"eb43162397eddfb31da1255dcb16643c","redirectAfterLogin":"/"}'})
-    #     self.assertEqual(response.status, '200 OK')
+    def test_thumbnail_with_cookie(self):
+        response = self.app.get('/api/v1/thumbnail/index/id', headers={'Cookie': '_ds_session_id={"login":"userid","roles":[],"sessionId":"eb43162397eddfb31da1255dcb16643c","redirectAfterLogin":"/"}'})
+        self.assertEqual(response.status, '200 OK')
+
+    def test_thumbnail_with_header(self):
+        response = self.app.get('/api/v1/thumbnail/index/id', headers={'X-Ds-Session-Id': '{"login":"userid","roles":[],"sessionId":"eb43162397eddfb31da1255dcb16643c","redirectAfterLogin":"/"}'})
+        self.assertEqual(response.status, '200 OK')
 
     def _assert_cors_headers_ok(self, response):
         self.assertEqual('*', response.headers.get('Access-Control-Allow-Origin'))
@@ -62,4 +62,4 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
             return
         self.send_response(200)
         self.end_headers()
-        self.wfile.write(b'{"_source": {"contentType": "text/plain"}}')
+        self.wfile.write(b'{"_source": {"contentType": "text/plain", "path": "my_doc.txt", "contentLength": 123}}')
