@@ -14,8 +14,7 @@ RUN gzip -dc Image-ExifTool-11.11.tar.gz | tar -xf - ; \
 
 ARG DSPREVIEW_VERSION
 WORKDIR /var/www/app
-COPY conf/production.ini .
-COPY dist/datashare-preview-$DSPREVIEW_VERSION.tar.gz .
+COPY dist/datashare-preview-$DSPREVIEW_VERSION.tar.gz conf/production.ini conf/dockerenv.ini ./
 RUN pip install datashare-preview-$DSPREVIEW_VERSION.tar.gz
 
 RUN useradd -ms /bin/bash xterm
@@ -25,4 +24,4 @@ USER xterm
 
 ENV CACHE_PATH /var/www/app/cache
 
-CMD [ "pserve", "production.ini" ]
+CMD [ "pserve", "dockerenv.ini" ]
