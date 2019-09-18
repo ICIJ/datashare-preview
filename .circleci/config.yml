@@ -20,7 +20,7 @@ jobs:
             . venv/bin/activate
             pip install xvfbwrapper
             python setup.py develop
-            pip install --upgrade git+https://github.com/algoo/preview-generator.git
+            pip install --upgrade pdf2image==1.7.1 git+https://github.com/algoo/preview-generator.git
             pip install -e ".[dev]"
 
       - save_cache:
