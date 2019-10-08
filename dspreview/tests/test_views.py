@@ -5,7 +5,6 @@ from concurrent.futures import ThreadPoolExecutor
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from shutil import copyfile
 
-
 def create_jpeg_ondisk(path):
     copyfile(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../resources/dummy.jpg'), path)
 
