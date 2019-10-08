@@ -14,8 +14,13 @@ SPREADSHEET_TYPES = (
     'application/vnd.openxmlformats-officedocument.spreadsheetml.template',
     'text/csv',)
 
+SPREADSHEET_EXTS = ('.xls', '.xlsx', '.ods', '.csv', '.tsv')
+
 def is_content_type_spreadsheet(content_type):
     return content_type in SPREADSHEET_TYPES
+
+def is_ext_spreadsheet(ext):
+    return ext in SPREADSHEET_EXTS
 
 def convert_spreadsheet_to_csv(file_path, output_dir):
     cmd = 'ssconvert'
@@ -31,7 +36,6 @@ def csv_to_dict(file_path):
             data.append(row)
     return data
 
-
 def get_spreadsheet_preview(params):
     sheets = {}
     # Work inside a temporary directory
@@ -40,6 +44,8 @@ def get_spreadsheet_preview(params):
         for sheet_file in convert_spreadsheet_to_csv(params['file_path'], output_dir):
             # Remove any extention from the file name
             sheet_name = basename(splitext(sheet_file)[0])
+            # Avoid using the file name as sheet name
+            sheet_name = 'main' if sheet_name == basename(params['file_path']) else sheet_name
             # Save the sheet data
             sheets[sheet_name] = csv_to_dict(sheet_file)
     return sheets

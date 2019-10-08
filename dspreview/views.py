@@ -75,7 +75,7 @@ def info(request):
         pages = manager.get_page_nb(params['file_path'], params['file_ext'])
         content_type = manager.get_mimetype(params['file_path'], params['file_ext'])
         # Disabled content preview if not requested explicitely
-        content = get_json_preview(params) if request.GET.get('include-content') else None
+        content = get_json_preview(params, content_type) if request.GET.get('include-content') else None
         return {'pages': pages, 'previewable': True, 'content': content, 'content_type': content_type}
     except DocumentNotPreviewable:
         return {'pages': 0, 'previewable': False}

@@ -11,6 +11,9 @@ def create_jpeg_ondisk(path):
 def create_ods_ondisk(path):
     copyfile(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../resources/dummy.ods'), path)
 
+def create_csv_ondisk(path):
+    copyfile(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../resources/dummy.csv'), path)
+
 class ViewIntegrationTest(unittest.TestCase):
     httpd = None
     executor = None
@@ -62,7 +65,7 @@ class ViewIntegrationTest(unittest.TestCase):
         self.assertEqual(response.headers['Content-Type'], 'application/json')
         self.assertEqual(json.loads(response.body.decode()), {"previewable": True, "pages": 1, "content": None, "content_type": "image/jpeg"})
 
-    def test_spreadsheet_json_has_sheets(self):
+    def test_ods_json_has_sheets(self):
         create_ods_ondisk('/tmp/ds-preview--index-id')
         response = self.app.get('/api/v1/thumbnail/index/id.json?include-content=1', headers=auth_headers())
         self.assertEqual(response.status, '200 OK')
@@ -71,7 +74,7 @@ class ViewIntegrationTest(unittest.TestCase):
         self.assertIn('people', info['content'])
         self.assertIn('meals', info['content'])
 
-    def test_spreadsheet_json_has_first_sheet(self):
+    def test_ods_json_has_first_sheet(self):
         create_ods_ondisk('/tmp/ds-preview--index-id')
         response = self.app.get('/api/v1/thumbnail/index/id.json?include-content=1', headers=auth_headers())
         self.assertEqual(response.status, '200 OK')
@@ -83,7 +86,7 @@ class ViewIntegrationTest(unittest.TestCase):
         self.assertEqual(info['content']['people'][1][0], 'foo')
         self.assertEqual(info['content']['people'][1][1], 'bar')
 
-    def test_spreadsheet_json_has_second_sheet(self):
+    def test_ods_json_has_second_sheet(self):
         create_ods_ondisk('/tmp/ds-preview--index-id')
         response = self.app.get('/api/v1/thumbnail/index/id.json?include-content=1', headers=auth_headers())
         self.assertEqual(response.status, '200 OK')
@@ -99,7 +102,6 @@ class ViewIntegrationTest(unittest.TestCase):
         self.assertEqual('*', response.headers.get('Access-Control-Allow-Origin'))
         self.assertEqual('GET', response.headers.get('Access-Control-Allow-Methods'))
         self.assertEqual('x-ds-session-id', response.headers.get('Access-Control-Allow-Headers'))
-
 
 def auth_headers():
     return {'Cookie': '_ds_session_id={"login":"userid","roles":[],"sessionId":"sid","redirectAfterLogin":"/"}'}
