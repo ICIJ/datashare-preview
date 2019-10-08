@@ -88,14 +88,11 @@ def check_user_authorization(index, id, routing, cookies):
     if content_length > DS_DOCUMENT_MAX_SIZE: raise DocumentTooBig()
     return json_response
 
-
 class DocumentUnauthorized(Exception):
     pass
 
-
 class DocumentNotPreviewable(Exception):
     pass
-
 
 class DocumentTooBig(Exception):
     pass

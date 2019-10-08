@@ -18,10 +18,10 @@ install-virtualenv:
 		if [ ! -d venv ]; then virtualenv $(VIRTUALENV) --python=python3 --no-site-package --distribute; fi
 
 install-pip:
-		. $(VIRTUALENV)bin/activate; pip install -r requirements.txt
+		. $(VIRTUALENV)bin/activate; pip install -e ".[dev]"
 
 run:
-		. $(VIRTUALENV)bin/activate; FLASK_ENV=development flask run --host=0.0.0.0 --port=5050
+		. $(VIRTUALENV)bin/activate; pserve conf/development.ini
 
 minor:
 		. $(VIRTUALENV)bin/activate; bumpversion --commit --tag --current-version ${CURRENT_VERSION} minor setup.py
@@ -49,4 +49,3 @@ docker-push:
 		docker push $(DOCKER_USER)/$(DOCKER_NAME):${CURRENT_VERSION}
 
 docker-publish: docker-build docker-tag docker-push
-

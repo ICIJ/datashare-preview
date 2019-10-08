@@ -1,7 +1,7 @@
 FROM python:3.7
 
 RUN apt-get update && apt-get install -y zlib1g-dev libjpeg-dev xterm \
-  scribus libreoffice inkscape xvfb qpdf \
+  scribus libreoffice gnumeric inkscape xvfb qpdf \
   python3-pythonmagick poppler-utils libfile-mimeinfo-perl
 
 WORKDIR /tmp

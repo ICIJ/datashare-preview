@@ -8,7 +8,7 @@ from pyramid.view import view_config
 
 from dspreview.document import DocumentTooBig, DocumentNotPreviewable, DocumentUnauthorized, delete_expired_documents, \
     check_user_authorization, download_document
-from dspreview.preview import get_jpeg_preview, build_preview_manager, get_size_width
+from dspreview.preview import get_jpeg_preview, get_json_preview, build_preview_manager, get_size_width
 
 log = logging.getLogger(__name__)
 
@@ -72,8 +72,11 @@ def info(request):
     manager = build_preview_manager()
     try:
         params = get_preview_generator_params(request)
-        pages = manager.get_page_nb(params['file_path'])
-        return {'pages': pages, 'previewable': True}
+        pages = manager.get_page_nb(params['file_path'], params['file_ext'])
+        content_type = manager.get_mimetype(params['file_path'], params['file_ext'])
+        # Disabled content preview if not requested explicitely
+        content = get_json_preview(params) if request.GET.get('include-content') else None
+        return {'pages': pages, 'previewable': True, 'content': content, 'content_type': content_type}
     except DocumentNotPreviewable:
         return {'pages': 0, 'previewable': False}
     except DocumentTooBig:
