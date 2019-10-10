@@ -18,6 +18,7 @@ jobs:
             sudp apt-get update && apt-get install exiftool libfile-mimeinfo-perl gnumeric
             python3 -m venv venv
             . venv/bin/activate
+            pip install--upgrade pip
             pip install xvfbwrapper
             python setup.py develop
             pip install --upgrade pdf2image==1.7.1 git+https://github.com/algoo/preview-generator.git
