@@ -15,9 +15,7 @@ jobs:
       - run:
           name: install dependencies
           command: |
-            sudo apt-get update && sudo apt-get install zlib1g-dev libjpeg-dev xterm \
-              scribus libreoffice gnumeric inkscape xvfb qpdf \
-              python3-pythonmagick poppler-utils libfile-mimeinfo-perl exiftool              
+            sudo apt-get update && sudo apt-get install exiftool libfile-mimeinfo-perl gnumeric libreoffice
             python3 -m venv venv
             . venv/bin/activate
             pip install --upgrade pip
