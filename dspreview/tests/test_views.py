@@ -6,16 +6,8 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from shutil import copyfile
 
 
-def create_jpeg_ondisk(path):
-    copyfile(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../resources/dummy.jpg'), path)
-
-
-def create_ods_ondisk(path):
-    copyfile(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../resources/dummy.ods'), path)
-
-
-def create_csv_ondisk(path):
-    copyfile(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../resources/dummy.csv'), path)
+def create_file_ondisk_from_resource(resource_name, path):
+    copyfile(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../resources/%s' % resource_name), path)
 
 
 class ViewIntegrationTest(unittest.TestCase):
@@ -53,54 +45,35 @@ class ViewIntegrationTest(unittest.TestCase):
         self.assertEqual(response.status, '401 Unauthorized')
 
     def test_thumbnail_with_cookie(self):
-        create_jpeg_ondisk('/tmp/ds-preview--index-id')
+        create_file_ondisk_from_resource('dummy.jpg', '/tmp/ds-preview--index-id')
         response = self.app.get('/api/v1/thumbnail/index/id', headers=auth_headers())
         self.assertEqual(response.status, '200 OK')
 
     def test_thumbnail_with_header(self):
-        create_jpeg_ondisk('/tmp/ds-preview--index-id')
+        create_file_ondisk_from_resource('dummy.jpg', '/tmp/ds-preview--index-id')
         response = self.app.get('/api/v1/thumbnail/index/id', headers=auth_headers())
         self.assertEqual(response.status, '200 OK')
 
     def test_info_json(self):
-        create_jpeg_ondisk('/tmp/ds-preview--index-id')
+        create_file_ondisk_from_resource('dummy.jpg', '/tmp/ds-preview--index-id')
         response = self.app.get('/api/v1/thumbnail/index/id.json', headers=auth_headers())
         self.assertEqual(response.status, '200 OK')
         self.assertEqual(response.headers['Content-Type'], 'application/json')
         self.assertEqual(json.loads(response.body.decode()), {"previewable": True, "pages": 1, "content": None, "content_type": "image/jpeg"})
 
-    def test_ods_json_has_sheets(self):
-        create_ods_ondisk('/tmp/ds-preview--index-id')
-        response = self.app.get('/api/v1/thumbnail/index/id.json?include-content=1', headers=auth_headers())
-        self.assertEqual(response.status, '200 OK')
-        self.assertEqual(response.headers['Content-Type'], 'application/json')
-        info = json.loads(response.body.decode())
-        self.assertIn('people', info['content'])
-        self.assertIn('meals', info['content'])
+    def test_ods_json(self):
+        create_file_ondisk_from_resource('dummy.ods', '/tmp/ds-preview--index-id')
 
-    def test_ods_json_has_first_sheet(self):
-        create_ods_ondisk('/tmp/ds-preview--index-id')
         response = self.app.get('/api/v1/thumbnail/index/id.json?include-content=1', headers=auth_headers())
-        self.assertEqual(response.status, '200 OK')
-        self.assertEqual(response.headers['Content-Type'], 'application/json')
-        info = json.loads(response.body.decode())
-        self.assertEqual(len(info['content']['people']), 2)
-        self.assertEqual(info['content']['people'][0][0], 'firstname')
-        self.assertEqual(info['content']['people'][0][1], 'lastname')
-        self.assertEqual(info['content']['people'][1][0], 'foo')
-        self.assertEqual(info['content']['people'][1][1], 'bar')
 
-    def test_ods_json_has_second_sheet(self):
-        create_ods_ondisk('/tmp/ds-preview--index-id')
-        response = self.app.get('/api/v1/thumbnail/index/id.json?include-content=1', headers=auth_headers())
         self.assertEqual(response.status, '200 OK')
         self.assertEqual(response.headers['Content-Type'], 'application/json')
-        info = json.loads(response.body.decode())
-        self.assertEqual(len(info['content']['meals']), 4)
-        self.assertEqual(info['content']['meals'][0][0], 'name')
-        self.assertEqual(info['content']['meals'][1][0], 'couscous')
-        self.assertEqual(info['content']['meals'][2][0], 'hummus')
-        self.assertEqual(info['content']['meals'][3][0], 'paella')
+        self.assertEqual(json.loads(response.body.decode()),
+                         {'content': {'meals': [['name'], ['couscous'], ['hummus'], ['paella']],
+                                      'people': [['firstname', 'lastname'], ['foo', 'bar']]},
+                          'content_type': 'application/vnd.oasis.opendocument.spreadsheet',
+                          'pages': 2,
+                          'previewable': True})
 
     def _assert_cors_headers_ok(self, response):
         self.assertEqual('*', response.headers.get('Access-Control-Allow-Origin'))
