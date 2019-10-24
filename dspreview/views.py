@@ -15,7 +15,6 @@ log = logging.getLogger(__name__)
 DS_SESSION_COOKIE_NAME = '_ds_session_id'
 DS_SESSION_HEADER_NAME = 'X-Ds-Session-Id'
 
-
 def has_session_cookie(request):
     return DS_SESSION_COOKIE_NAME in request.cookies
 

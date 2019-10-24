@@ -13,8 +13,8 @@ DS_HOST = os.environ.get('DS_HOST', 'http://localhost:8080')
 DS_FILE_PREFIX = os.environ.get('DS_FILE_PREFIX', 'ds-preview-')
 DS_DOCUMENT_META_PATH = os.environ.get('DS_DOCUMENT_META_PATH', '/api/index/search/%s/doc/%s')
 DS_DOCUMENT_SRC_PATH = os.environ.get('DS_DOCUMENT_SRC_PATH', '/api/%s/documents/src/%s')
-DS_DOCUMENT_MAX_SIZE = 50e6 # 50 Mo
-DS_DOCUMENT_MAX_AGE = 60 * 60 * 24 * 7 # 7 days
+DS_DOCUMENT_MAX_SIZE = os.environ.get('DS_DOCUMENT_MAX_SIZE', 50e6) # 50 MB
+DS_DOCUMENT_MAX_AGE = os.environ.get('DS_DOCUMENT_MAX_AGE', 60 * 60 * 24 * 3) # 3 days
 
 
 def build_document_meta_url(index, id, routing = None):
@@ -41,7 +41,7 @@ def get_file_age(file):
 
 
 def is_file_expired(file):
-    return get_file_age(file) > DS_DOCUMENT_MAX_AGE
+    return get_file_age(file) > int(DS_DOCUMENT_MAX_AGE)
 
 
 def expired_documents():
