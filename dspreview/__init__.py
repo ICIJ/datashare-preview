@@ -1,6 +1,7 @@
 import logging
 
 import pkg_resources
+import os
 from pyramid.config import Configurator
 from pyramid.events import NewRequest
 
@@ -17,8 +18,16 @@ def add_cors_headers_response_callback(event):
 
     event.request.add_response_callback(add_cors_headers)
 
+def read_settings_in_environements(settings, prefix='DS_'):
+    for (env_key, value) in os.environ.items():
+        if env_key.upper().startswith(prefix.upper()):
+            settings_key = '.'.join(env_key.lower().split('_'))
+            settings[settings_key] = value
+    return settings
+
 
 def main(global_config, **settings):
+    settings = read_settings_in_environements(settings)
     config = Configurator(settings=settings)
 
     config.add_route('home', '/', request_method='GET')

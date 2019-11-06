@@ -6,39 +6,46 @@ from pyramid.httpexceptions import exception_response
 from pyramid.response import Response, FileResponse
 from pyramid.view import view_config
 
-from dspreview.document import DocumentTooBig, DocumentNotPreviewable, DocumentUnauthorized, delete_expired_documents, \
-    check_user_authorization, download_document
+from dspreview.document import Document, DocumentTooBig, DocumentNotPreviewable, DocumentUnauthorized
 from dspreview.preview import get_jpeg_preview, get_json_preview, build_preview_manager, get_size_width
+from dspreview.utils import is_truthy
 
 log = logging.getLogger(__name__)
 
-DS_SESSION_COOKIE_NAME = '_ds_session_id'
-DS_SESSION_HEADER_NAME = 'X-Ds-Session-Id'
-
 def has_session_cookie(request):
-    return DS_SESSION_COOKIE_NAME in request.cookies
+    enabled = is_truthy(request.registry.settings['ds.session.cookie.enabled'])
+    name = request.registry.settings['ds.session.cookie.name']
+    return enabled and name in request.cookies
 
 
 def has_session_header(request):
-    return DS_SESSION_HEADER_NAME in request.headers
+    enabled = is_truthy(request.registry.settings['ds.session.header.enabled'])
+    name = request.registry.settings['ds.session.header.name']
+    return enabled and name in request.headers
 
 
 def get_cookies_from_forwarded_headers(request):
     if not has_session_cookie(request) and has_session_header(request):
+        session_cookie_name = request.registry.settings['ds.session.cookie.name']
+        session_header_name = request.registry.settings['ds.session.header.name']
         cookies = dict()
-        cookies[DS_SESSION_COOKIE_NAME] = request.headers.get(DS_SESSION_HEADER_NAME, '')
+        cookies[session_cookie_name] = request.headers.get(session_header_name, '')
         return cookies
     return request.cookies
 
 
 def get_preview_generator_params(request):
+    index = request.matchdict['index']
+    id = request.matchdict['id']
     routing = request.GET.get('routing', None)
     size = request.GET.get('size', 'xs')
     page = request.GET.get('page', 0)
     cookies = get_cookies_from_forwarded_headers(request)
-    delete_expired_documents()
-    es_json = check_user_authorization(request.matchdict['index'], request.matchdict['id'], routing, cookies)
-    file_path = download_document(request.matchdict['index'], request.matchdict['id'], routing, cookies)
+    # Build a document instance
+    document = Document(request.registry.settings, index, id, routing)
+    document.delete_expired_documents()
+    es_json = document.check_user_authorization(cookies)
+    file_path = document.download_document(cookies)
     return dict(file_path=file_path, height=get_size_width(size), page=int(page), file_ext=splitext(es_json.get('_source').get('path'))[1])
 
 

@@ -1,5 +1,12 @@
 from functools import wraps
 
+def is_falsy(value = None):
+    return value in [False, 'False', 'false', 0, 'no', '', None]
+
+
+def is_truthy(value = None):
+    return not is_falsy(value)
+
 
 def hash_dict(func):
     """Transform mutable dictionnary
