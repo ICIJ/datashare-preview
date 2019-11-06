@@ -1,9 +1,12 @@
 import json
 import os
 import unittest
+
 from concurrent.futures import ThreadPoolExecutor
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from shutil import copyfile
+from dspreview import main
+from webtest import TestApp
 
 
 def create_file_ondisk_from_resource(resource_name, path):
@@ -25,9 +28,19 @@ class ViewIntegrationTest(unittest.TestCase):
         cls.executor.shutdown()
 
     def setUp(self):
-        from dspreview import main
-        app = main({})
-        from webtest import TestApp
+        settings = {
+            'ds.host': 'http://localhost:8080',
+            'ds.file.prefix': 'ds-preview-',
+            'ds.document.meta.path': '/api/index/search/%s/doc/%s',
+            'ds.document.src.path': '/api/%s/documents/src/%s',
+            'ds.document.max.size': '50000000',
+            'ds.document.max.age': '259200',
+            'ds.session.cookie.enabled': 'true',
+            'ds.session.cookie.name': '_ds_session_id',
+            'ds.session.header.enabled': 'true',
+            'ds.session.header.name': 'X-Ds-Session-Id',
+        }
+        app = main({}, **settings)
         self.app = TestApp(app)
 
     def test_home_page(self):

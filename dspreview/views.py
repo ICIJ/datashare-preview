@@ -13,13 +13,13 @@ from dspreview.utils import is_truthy
 log = logging.getLogger(__name__)
 
 def has_session_cookie(request):
-    enabled = is_truthy(request.registry.settings['ds.session.cookie.enabled'])
+    enabled = is_truthy(request.registry.settings.get('ds.session.cookie.enabled'))
     name = request.registry.settings['ds.session.cookie.name']
     return enabled and name in request.cookies
 
 
 def has_session_header(request):
-    enabled = is_truthy(request.registry.settings['ds.session.header.enabled'])
+    enabled = is_truthy(request.registry.settings.get('ds.session.header.enabled'))
     name = request.registry.settings['ds.session.header.name']
     return enabled and name in request.headers
 
