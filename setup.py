@@ -10,7 +10,7 @@ requires = [
     'preview-generator==0.11',
     'pyramid==1.10',
     'pyramid-auto-env==0.1.2',
-    'waitress==1.3.1',
+    'waitress==1.4.2',
     'requests==2.22.0',
     'pygelf==0.3.6',
 ]
