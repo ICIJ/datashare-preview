@@ -19,7 +19,7 @@ jobs:
             python3 -m venv venv
             . venv/bin/activate
             pip install --upgrade pip
-            pip install xvfbwrapper
+            pip install xvfbwrapper venusian
             python setup.py develop
             pip install --upgrade pdf2image==1.7.1 preview-generator==0.11
             pip install -e ".[dev]"
