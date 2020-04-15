@@ -18,12 +18,18 @@ def add_cors_headers_response_callback(event):
 
     event.request.add_response_callback(add_cors_headers)
 
+
 def read_settings_in_environements(settings, prefix='DS_'):
     for (env_key, value) in os.environ.items():
         if env_key.upper().startswith(prefix.upper()):
             settings_key = '.'.join(env_key.lower().split('_'))
             settings[settings_key] = value
-    return settings
+    settings['server_main_port'] = "6543"
+    return expandvars_dict(settings)
+
+
+def expandvars_dict(settings):
+    return dict((k, os.path.expandvars(value)) for k, value in settings.items())
 
 
 def main(global_config, **settings):
@@ -35,10 +41,10 @@ def main(global_config, **settings):
     config.add_route('info_options', '/api/v1/thumbnail/{index}/{id}.json', request_method='OPTIONS')
     config.add_route('thumbnail', '/api/v1/thumbnail/{index}/{id}', request_method='GET')
     config.add_route('thumbnail_options', '/api/v1/thumbnail/{index}/{id}', request_method='OPTIONS')
-
     config.add_subscriber(add_cors_headers_response_callback, NewRequest)
-
     config.scan()
-    log.info('launching pserver for datashare preview version %s' %
-             pkg_resources.get_distribution("datashare_preview").version)
+
+    version = pkg_resources.get_distribution("datashare_preview").version
+    log.info('launching pserver for datashare preview version %s' % version)
+    
     return config.make_wsgi_app()

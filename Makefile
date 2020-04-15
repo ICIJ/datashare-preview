@@ -21,7 +21,7 @@ install-pip:
 		. $(VIRTUALENV)bin/activate; pip install -e ".[dev]"
 
 run:
-		. $(VIRTUALENV)bin/activate; pserve conf/development.ini  --reload
+		. $(VIRTUALENV)bin/activate; pserve conf/development.ini --reload
 
 minor:
 		. $(VIRTUALENV)bin/activate; bumpversion --commit --tag --current-version ${CURRENT_VERSION} minor setup.py

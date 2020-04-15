@@ -50,5 +50,4 @@ setup(name='datashare-preview',
         'paste.app_factory': [
             'main = dspreview:main',
         ],
-      }
-      )
+      })
