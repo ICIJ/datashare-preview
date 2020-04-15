@@ -24,3 +24,22 @@ To develop, just run::
 To run the server::
 
     pserve conf/development.ini
+
+
+Release
+-------
+
+Mark the version (choose the correct one following [semver](https://semver.org/))::
+
+    make path
+    make minor
+    make major
+
+To build the Python package::
+
+    make clean dist
+
+
+Then build the docker image and publish it on Docker Hub::
+
+    make docker-publish
