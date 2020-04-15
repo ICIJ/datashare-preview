@@ -13,15 +13,22 @@ jobs:
             - v1-dependencies-
 
       - run:
-          name: install dependencies
+          name: install system dependencies
           command: |
             sudo apt-get update && sudo apt-get install exiftool libfile-mimeinfo-perl gnumeric libreoffice
+
+      - run:
+          name: setup virtualenv
+          command: |
             python3 -m venv venv
+
+      - run:
+          name: install pip package
+          command: |
             . venv/bin/activate
             pip install --upgrade pip
             pip install xvfbwrapper venusian
             python setup.py develop
-            pip install --upgrade pdf2image==1.7.1 preview-generator==0.11
             pip install -e ".[dev]"
 
       - save_cache:
