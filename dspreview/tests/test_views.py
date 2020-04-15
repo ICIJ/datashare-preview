@@ -16,10 +16,11 @@ def create_file_ondisk_from_resource(resource_name, path):
 class ViewIntegrationTest(unittest.TestCase):
     httpd = None
     executor = None
+
     @classmethod
     def setUpClass(cls) -> None:
         cls.httpd = HTTPServer(('localhost', 8080), SimpleHTTPRequestHandler)
-        cls.executor = ThreadPoolExecutor(max_workers=1)
+        cls.executor = ThreadPoolExecutor(max_workers=10)
         cls.executor.submit(cls.httpd.serve_forever)
 
     @classmethod

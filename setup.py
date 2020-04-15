@@ -7,7 +7,7 @@ with open(os.path.join(here, 'README.rst')) as f:
     README = f.read()
 
 requires = [
-    'preview-generator==0.11',
+    'preview-generator==0.13',
     'pyramid==1.10',
     'pyramid-auto-env==0.1.2',
     'waitress==1.3.1',
