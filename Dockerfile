@@ -1,4 +1,4 @@
-FROM python:3.5
+FROM python:3.7
 
 RUN apt-get update && apt-get install -y zlib1g-dev libjpeg-dev xterm \
   scribus libreoffice gnumeric inkscape xvfb qpdf \
