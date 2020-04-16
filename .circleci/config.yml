@@ -37,7 +37,7 @@ jobs:
       - run:
           name: run tests
           command: |
-            pipenv run python setup.py test
+            pipenv run nosetests
 
       - store_artifacts:
           path: test-reports

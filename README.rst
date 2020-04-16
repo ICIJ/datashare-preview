@@ -15,15 +15,13 @@ Develop
 
 To develop, just run::
 
-    virtualenv --python=python3 venv
-    source venv/bin/activate
-    python setup.py develop
-    pip install -e ".[dev]"
+    pipenv install -d
+    pipenv run python setup.py develop
     nosetests
 
 To run the server::
 
-    pserve conf/development.ini
+    pipenv run pserve conf/development.ini
 
 
 Release
