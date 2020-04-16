@@ -13,11 +13,10 @@ It will cache the previews to avoid reprocessing images for each request.
 Develop
 -------
 
-To develop, just run::
+To develop, [install Pipenv](https://github.com/pypa/pipenv#installation) then just run::
 
     pipenv install -d
-    pipenv run python setup.py develop
-    nosetests
+    pipenv run nosetests
 
 To run the server::
 
