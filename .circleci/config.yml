@@ -2,15 +2,15 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/python:3.5
+      - image: circleci/python:3.7
 
     steps:
       - checkout
 
+      - run: sudo chown -R circleci:circleci /usr/local/bin
+      - run: sudo chown -R circleci:circleci /usr/local/lib/python3.7/site-packages
       - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "setup.py" }}
-            - v1-dependencies-
+          key: deps9-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
 
       - run:
           name: install system dependencies
@@ -18,29 +18,26 @@ jobs:
             sudo apt-get update && sudo apt-get install exiftool libfile-mimeinfo-perl gnumeric libreoffice
 
       - run:
-          name: setup virtualenv
+          name: install pipenv package
           command: |
-            python3 -m venv venv
+            sudo pip install pipenv
 
       - run:
-          name: install pip package
+          name: install pip dependencies
           command: |
-            . venv/bin/activate
-            pip install --upgrade pip
-            pip install xvfbwrapper venusian
-            python setup.py develop
-            pip install -e ".[dev]"
+            pipenv install -d
 
       - save_cache:
+          key: deps9-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
           paths:
-            - ./venv
-          key: v1-dependencies-{{ checksum "setup.py" }}
+            - ".venv"
+            - "/usr/local/bin"
+            - "/usr/local/lib/python3.7/site-packages"
 
       - run:
           name: run tests
           command: |
-            . venv/bin/activate
-            python setup.py test
+            pipenv run python setup.py test
 
       - store_artifacts:
           path: test-reports

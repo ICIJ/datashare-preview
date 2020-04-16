@@ -20,7 +20,7 @@ class ViewIntegrationTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.httpd = HTTPServer(('localhost', 8080), SimpleHTTPRequestHandler)
-        cls.executor = ThreadPoolExecutor(max_workers=10)
+        cls.executor = ThreadPoolExecutor(max_workers=1)
         cls.executor.submit(cls.httpd.serve_forever)
 
     @classmethod
