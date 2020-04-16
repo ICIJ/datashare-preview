@@ -31,7 +31,7 @@ Release
 
 Mark the version (choose the correct one following [semver](https://semver.org/))::
 
-    make path
+    make patch
     make minor
     make major
 
