@@ -13,7 +13,7 @@ It will cache the previews to avoid reprocessing images for each request.
 Develop
 -------
 
-To develop, [install Pipenv](https://github.com/pypa/pipenv#installation) then just run::
+To develop, `install Pipenv <https://github.com/pypa/pipenv#installation>`_ then just run::
 
     pipenv install -d
     pipenv run nosetests
@@ -26,7 +26,7 @@ To run the server::
 Release
 -------
 
-Mark the version (choose the correct one following [semver](https://semver.org/))::
+Mark the version (choose the correct one following `semver <https://semver.org/>`_)::
 
     make patch
     make minor
