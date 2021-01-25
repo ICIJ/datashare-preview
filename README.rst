@@ -12,6 +12,9 @@ It will cache the previews to avoid reprocessing images for each request.
 
 Develop
 -------
+Before all, install dependency::
+
+   sudo apt install libimage-exiftool-perl
 
 To develop, `install Pipenv <https://github.com/pypa/pipenv#installation>`_ then just run::
 
