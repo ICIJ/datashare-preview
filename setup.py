@@ -20,6 +20,7 @@ dev_requires = [
     'bumpversion',
     'pyramid-debugtoolbar',
     'pyramid-exclog',
+    'vtk',
     'webtest'
 ]
 

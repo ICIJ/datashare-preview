@@ -42,7 +42,7 @@ def get_spreadsheet_preview(params):
     with TemporaryDirectory(prefix='gnumeric-') as output_dir:
         # Convert the entire spreadsheet and create one file per-sheet
         for sheet_file in convert_spreadsheet_to_csv(params['file_path'], output_dir):
-            # Remove any extention from the file name
+            # Remove any extension from the file name
             sheet_name = basename(splitext(sheet_file)[0])
             # Avoid using the file name as sheet name
             sheet_name = 'main' if sheet_name == basename(params['file_path']) else sheet_name
