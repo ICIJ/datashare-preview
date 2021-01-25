@@ -14,7 +14,11 @@ Develop
 -------
 Before all, install dependency::
 
-   sudo apt install libimage-exiftool-perl
+   sudo apt-get install libimage-exiftool-perl
+
+Install dependencies to run the tests::
+
+   sudo apt-get install inkscape scribus
 
 To develop, `install Pipenv <https://github.com/pypa/pipenv#installation>`_ then just run::
 
