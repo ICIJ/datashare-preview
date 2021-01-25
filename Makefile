@@ -30,7 +30,7 @@ major:
 		. $(VIRTUALENV)bin/activate; bumpversion --commit --tag --current-version ${CURRENT_VERSION} major setup.py
 
 patch:
-		. $(VIRTUALENV)bin/activate; bumpversion --commit --tag --current-version ${CURRENT_VERSION} patch setup.py
+		bumpversion --commit --tag --current-version ${CURRENT_VERSION} patch setup.py
 
 docker-run:
 		docker run -it --rm \
