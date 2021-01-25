@@ -19,6 +19,7 @@ Before all, install dependency::
 To develop, `install Pipenv <https://github.com/pypa/pipenv#installation>`_ then just run::
 
     pipenv install -d
+    pipenv run python setup.py test
     pipenv run nosetests
 
 To run the server::
