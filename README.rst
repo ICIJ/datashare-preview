@@ -18,7 +18,7 @@ Before all, install dependency::
 
 Install dependencies to run the tests::
 
-   sudo apt-get install inkscape scribus
+   sudo apt-get install inkscape scribus gnumeric
 
 To develop, `install Pipenv <https://github.com/pypa/pipenv#installation>`_ then just run::
 
