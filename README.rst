@@ -16,7 +16,7 @@ Develop
 To develop, [install Pipenv](https://github.com/pypa/pipenv#installation) then just run::
 
     pipenv install -d
-    pipenv run nosetests
+    pipenv run python setup.py test
 
 To run the server::
 
