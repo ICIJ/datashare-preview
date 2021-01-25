@@ -24,7 +24,7 @@ run:
 		. $(VIRTUALENV)bin/activate; pserve conf/development.ini --reload
 
 minor:
-		. $(VIRTUALENV)bin/activate; bumpversion --commit --tag --current-version ${CURRENT_VERSION} minor setup.py
+		bumpversion --commit --tag --current-version ${CURRENT_VERSION} minor setup.py --allow-dirty
 
 major:
 		. $(VIRTUALENV)bin/activate; bumpversion --commit --tag --current-version ${CURRENT_VERSION} major setup.py
