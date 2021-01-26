@@ -18,16 +18,16 @@ install-virtualenv:
 		if [ ! -d venv ]; then virtualenv $(VIRTUALENV) --python=python3 --no-site-package --distribute; fi
 
 install-pip:
-		. $(VIRTUALENV)bin/activate; pip install -e ".[dev]"
+		pip install -e ".[dev]"
 
 run:
-		. $(VIRTUALENV)bin/activate; pserve conf/development.ini --reload
+		pserve conf/development.ini --reload
 
 minor:
 		bumpversion --commit --tag --current-version ${CURRENT_VERSION} minor setup.py --allow-dirty
 
 major:
-		. $(VIRTUALENV)bin/activate; bumpversion --commit --tag --current-version ${CURRENT_VERSION} major setup.py
+		bumpversion --commit --tag --current-version ${CURRENT_VERSION} major setup.py
 
 patch:
 		bumpversion --commit --tag --current-version ${CURRENT_VERSION} patch setup.py
