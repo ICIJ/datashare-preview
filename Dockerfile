@@ -20,6 +20,10 @@ RUN pip install datashare-preview-$DSPREVIEW_VERSION.tar.gz
 RUN useradd -ms /bin/bash xterm
 RUN mkdir --mode 777 /var/www/app/cache
 
+# Fix a policy issue with ImageMagick (fixed on Ghostscript 9.24)
+# @see https://stackoverflow.com/questions/52998331/imagemagick-security-policy-pdf-blocking-conversion
+RUN sed -i '/disable ghostscript format types/,+6d' /etc/ImageMagick-6/policy.xml
+
 USER xterm
 
 ENV CACHE_PATH /var/www/app/cache
