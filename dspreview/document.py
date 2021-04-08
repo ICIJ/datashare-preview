@@ -82,6 +82,8 @@ class Document:
         response = requests.get(self.meta_url, cookies=cookies)
         # Raise exception if the document request didn't succeed
         if response.status_code == 401: raise DocumentUnauthorized()
+        # Any other error
+        elif not response.ok: raise DocumentNotPreviewable()
         # Find the content type and content length in nested attributes
         json_response = response.json()
         content_type = json_response.get('_source', {}).get('contentType', None)
