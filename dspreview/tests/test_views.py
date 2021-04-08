@@ -31,7 +31,6 @@ class ViewIntegrationTest(unittest.TestCase):
     def setUp(self):
         settings = {
             'ds.host': 'http://localhost:8080',
-            'ds.file.prefix': 'ds-preview-',
             'ds.document.meta.path': '/api/index/search/%s/doc/%s',
             'ds.document.src.path': '/api/%s/documents/src/%s',
             'ds.document.max.size': '50000000',
