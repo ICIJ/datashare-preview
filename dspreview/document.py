@@ -6,9 +6,13 @@ from datetime import datetime
 from tempfile import gettempdir
 from glob import glob
 from pathlib import Path
-from dspreview.preview import is_content_type_previewable
+from shutil import rmtree
+from dspreview.preview import THUMBNAILS_PATH
+from dspreview.spreadsheet import is_content_type_spreadsheet, is_ext_spreadsheet, get_spreadsheet_preview
+from preview_generator.manager import PreviewManager
 
 CACHE_PATH = os.environ.get('CACHE_PATH', gettempdir())
+DOCUMENTS_PATH = os.path.join(CACHE_PATH, 'documents')
 
 class Document:
     def __init__(self, settings, index, id, routing):
@@ -16,6 +20,9 @@ class Document:
         self.index = index
         self.id = id
         self.routing = routing
+        self.delete_expired_documents()
+        self.setup_target_directory()
+        self.manager = PreviewManager(self.thumbnail_directory, create_folder = True)
 
 
     @property
@@ -38,27 +45,43 @@ class Document:
 
     @property
     def target_path(self):
-        file_name = '%s-%s-%s' % (self.settings['ds.file.prefix'], self.index, self.id)
-        return os.path.join(CACHE_PATH, file_name)
+        return os.path.join(DOCUMENTS_PATH, self.index, self.id, 'raw')
+
+
+    @property
+    def target_directory(self):
+        return os.path.join(DOCUMENTS_PATH, self.index, self.id)
+
+
+    @property
+    def thumbnail_directory(self):
+        return os.path.join(THUMBNAILS_PATH, self.index, self.id)
 
 
     @property
     def expired_documents(self):
-        files = glob(os.path.join(CACHE_PATH, '%s*' % self.settings['ds.file.prefix']))
-        return [ file for file in files if self.is_file_expired(file) ]
+        documents = glob(os.path.join(CACHE_PATH, 'documents/*/*'))
+        thumbnails = glob(os.path.join(CACHE_PATH, 'thumbnails/*/*'))
+        directories = documents + thumbnails
+        return [ dir for dir in directories if self.is_directory_expired(dir) ]
+
+
+    def setup_target_directory(self):
+        return os.makedirs(self.target_directory, exist_ok = True)
 
 
     def delete_expired_documents(self):
-        for file_path in self.expired_documents:
-            os.remove(file_path)
+        for document_directory in self.expired_documents:
+            rmtree(document_directory)
 
 
-    def get_file_age(self, file):
-        return datetime.now().timestamp() - os.path.getmtime(file)
+    def get_directory_age(self, directory):
+        return datetime.now().timestamp() - os.path.getmtime(directory)
 
 
-    def is_file_expired(self, file):
-        return self.get_file_age(file) > int(self.settings['ds.document.max.age'])
+    def is_directory_expired(self, directory):
+        max_age = int(self.settings['ds.document.max.age'])
+        return self.get_directory_age(directory) > max_age
 
 
     def download_document_with_steam(self, cookies):
@@ -71,7 +94,7 @@ class Document:
 
 
     def download_document(self, cookies):
-        # Ensure the file style exist
+        # Ensure the file style doesn't exist
         if not Path(self.target_path).exists():
             # Build the document URL
             self.download_document_with_steam(cookies)
@@ -83,16 +106,35 @@ class Document:
         # Raise exception if the document request didn't succeed
         if response.status_code == 401: raise DocumentUnauthorized()
         # Any other error
-        elif not response.ok: raise DocumentNotPreviewable()
+        elif not response.ok:
+            raise DocumentNotPreviewable()
         # Find the content type and content length in nested attributes
         json_response = response.json()
         content_type = json_response.get('_source', {}).get('contentType', None)
         content_length = json_response.get('_source', {}).get('contentLength', 0)
         # Raise exception if the contentType is not previewable
-        if not is_content_type_previewable(content_type): raise DocumentNotPreviewable()
+        if not self.is_content_type_previewable(content_type): raise DocumentNotPreviewable()
         # Raise exception if the contentType is not previewable
         if content_length > int(self.settings['ds.document.max.size']): raise DocumentTooBig()
         return json_response
+
+
+    def get_jpeg_preview(self, params):
+        return self.manager.get_jpeg_preview(**params)
+
+
+    def get_json_preview(self, params, content_type):
+        file_ext = params['file_ext']
+        file_path = params['file_path']
+        # Only spreadsheet preview is supported yet
+        if self.is_content_type_spreadsheet(content_type) or self.is_ext_spreadsheet(file_ext):
+            return self.get_spreadsheet_preview(params)
+        else:
+            return None
+
+
+    def is_content_type_previewable(self, content_type):
+        return content_type in self.manager.get_supported_mimetypes()
 
 
 class DocumentUnauthorized(Exception):

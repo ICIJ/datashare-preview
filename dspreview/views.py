@@ -7,7 +7,7 @@ from pyramid.response import Response, FileResponse
 from pyramid.view import view_config
 
 from dspreview.document import Document, DocumentTooBig, DocumentNotPreviewable, DocumentUnauthorized
-from dspreview.preview import get_jpeg_preview, get_json_preview, build_preview_manager, get_size_width
+from dspreview.preview import get_size_width
 from dspreview.utils import is_truthy
 
 log = logging.getLogger(__name__)
@@ -35,18 +35,26 @@ def get_cookies_from_forwarded_headers(request):
 
 
 def get_preview_generator_params(request):
-    index = request.matchdict['index']
-    id = request.matchdict['id']
-    routing = request.GET.get('routing', None)
     size = request.GET.get('size', 'xs')
     page = request.GET.get('page', 0)
     cookies = get_cookies_from_forwarded_headers(request)
     # Build a document instance
-    document = Document(request.registry.settings, index, id, routing)
-    document.delete_expired_documents()
+    document = get_request_document(request)
     es_json = document.check_user_authorization(cookies)
     file_path = document.download_document(cookies)
-    return dict(file_path=file_path, height=get_size_width(size), page=int(page), file_ext=splitext(es_json.get('_source').get('path'))[1])
+    file_ext = splitext(es_json.get('_source').get('path'))[1]
+    return dict(file_path=file_path,
+                file_ext=file_ext,
+                height=get_size_width(size),
+                page=int(page))
+
+
+def get_request_document(request):
+    settings = request.registry.settings
+    index = request.matchdict['index']
+    id = request.matchdict['id']
+    routing = request.GET.get('routing', None)
+    return Document(settings, index, id, routing)
 
 
 @view_config(route_name='home')
@@ -64,7 +72,8 @@ def thumbnail_options(_): return Response()
 def thumbnail(request):
     try:
         params = get_preview_generator_params(request)
-        return FileResponse(get_jpeg_preview(params), content_type='image/jpeg')
+        document = get_request_document(request)
+        return FileResponse(document.get_jpeg_preview(params), content_type='image/jpeg')
     except DocumentTooBig:
         raise exception_response(509)
     except DocumentNotPreviewable:
@@ -75,13 +84,13 @@ def thumbnail(request):
 
 @view_config(route_name='info', renderer='json')
 def info(request):
-    manager = build_preview_manager()
     try:
         params = get_preview_generator_params(request)
-        pages = manager.get_page_nb(params['file_path'], params['file_ext'])
-        content_type = manager.get_mimetype(params['file_path'], params['file_ext'])
+        document = get_request_document(request)
+        pages = document.manager.get_page_nb(params['file_path'], params['file_ext'])
+        content_type = document.manager.get_mimetype(params['file_path'], params['file_ext'])
         # Disabled content preview if not requested explicitely
-        content = get_json_preview(params, content_type) if request.GET.get('include-content') else None
+        content = document.get_json_preview(params, content_type) if request.GET.get('include-content') else None
         return {'pages': pages, 'previewable': True, 'content': content, 'content_type': content_type}
     except DocumentNotPreviewable:
         return {'pages': 0, 'previewable': False}
