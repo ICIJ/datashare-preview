@@ -30,7 +30,7 @@ patch:
 
 docker-run:
 		docker run -it --rm \
-		-p 5001:5000 \
+		-p 5000:5000 \
 		-e DISPLAY=$(DISPLAY) \
 		-v $(PWD)/cache/:/var/www/app/cache/ \
 		-v /tmp/.X11-unix:/tmp/.X11-unix $(DOCKER_NAME)
