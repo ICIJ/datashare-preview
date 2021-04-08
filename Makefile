@@ -1,6 +1,5 @@
 DOCKER_USER := icij
 DOCKER_NAME := datashare-preview
-VIRTUALENV := venv/
 PWD := `pwd`
 CURRENT_VERSION ?= `python setup.py --version`
 
@@ -8,29 +7,26 @@ clean:
 		find . -name "*.pyc" -exec rm -rf {} \;
 		rm -rf dist *.egg-info __pycache__
 
-install: install-virtualenv install-pip
+install: install-virtualenv
 
 dist:
 		python setup.py sdist
 
 install-virtualenv:
 		# Check if venv folder is already created and create it
-		if [ ! -d venv ]; then virtualenv $(VIRTUALENV) --python=python3 --no-site-package --distribute; fi
-
-install-pip:
-		. $(VIRTUALENV)bin/activate; pip install -e ".[dev]"
+		pipenv install
 
 run:
-		. $(VIRTUALENV)bin/activate; pserve conf/development.ini --reload
+		pipenv run pserve conf/development.ini --reload
 
 minor:
-		. $(VIRTUALENV)bin/activate; bumpversion --commit --tag --current-version ${CURRENT_VERSION} minor setup.py
+		pipenv run bumpversion --commit --tag --current-version ${CURRENT_VERSION} minor setup.py
 
 major:
-		. $(VIRTUALENV)bin/activate; bumpversion --commit --tag --current-version ${CURRENT_VERSION} major setup.py
+		pipenv run bumpversion --commit --tag --current-version ${CURRENT_VERSION} major setup.py
 
 patch:
-		. $(VIRTUALENV)bin/activate; bumpversion --commit --tag --current-version ${CURRENT_VERSION} patch setup.py
+		pipenv run bumpversion --commit --tag --current-version ${CURRENT_VERSION} patch setup.py
 
 docker-run:
 		docker run -it --rm \
