@@ -1,16 +1,16 @@
 DOCKER_USER := icij
 DOCKER_NAME := datashare-preview
 PWD := `pwd`
-CURRENT_VERSION ?= `python setup.py --version`
+CURRENT_VERSION ?= `pipenv run python setup.py --version`
 
 clean:
 		find . -name "*.pyc" -exec rm -rf {} \;
-		rm -rf dist *.egg-info __pycache__
+		rm -rf dist *.egg-info __pycache__ .eggs
 
 install: install-virtualenv
 
 dist:
-		python setup.py sdist
+		pipenv run python setup.py sdist
 
 install-virtualenv:
 		# Check if venv folder is already created and create it
@@ -30,7 +30,7 @@ patch:
 
 docker-run:
 		docker run -it --rm \
-		-p 5000:5000 \
+		-p 5001:5000 \
 		-e DISPLAY=$(DISPLAY) \
 		-v $(PWD)/cache/:/var/www/app/cache/ \
 		-v /tmp/.X11-unix:/tmp/.X11-unix $(DOCKER_NAME)
