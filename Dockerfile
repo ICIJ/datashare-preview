@@ -2,7 +2,7 @@ FROM python:3.7
 
 RUN apt-get update && apt-get install -y zlib1g-dev libjpeg-dev xterm \
   scribus libreoffice gnumeric inkscape xvfb qpdf \
-  python3-pythonmagick poppler-utils libfile-mimeinfo-perl
+  python3-pythonmagick poppler-utils libfile-mimeinfo-perl libimage-exiftool-perl
 
 WORKDIR /tmp
 ADD https://sno.phy.queensu.ca/~phil/exiftool/Image-ExifTool-11.11.tar.gz .
