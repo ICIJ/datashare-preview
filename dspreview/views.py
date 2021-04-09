@@ -87,13 +87,23 @@ def info(request):
     try:
         params = get_preview_generator_params(request)
         document = get_request_document(request)
-        pages = document.manager.get_page_nb(params['file_path'], params['file_ext'])
         content_type = document.manager.get_mimetype(params['file_path'], params['file_ext'])
+        print(content_type, params)
+        pages = document.manager.get_page_nb(params['file_path'], '.ods')
         # Disabled content preview if not requested explicitely
-        content = document.get_json_preview(params, content_type) if request.GET.get('include-content') else None
-        return {'pages': pages, 'previewable': True, 'content': content, 'content_type': content_type}
+        if request.GET.get('include-content'):
+            print(params['file_path'], params['file_ext'])
+            content = document.get_json_preview(params['file_ext'], content_type)
+        else:
+            content = None
+        return {
+            'content': content,
+            'content_type': content_type,
+            'pages': pages,
+            'previewable': True,
+        }
     except DocumentNotPreviewable:
-        return {'pages': 0, 'previewable': False}
+        return { 'pages': 0, 'previewable': False }
     except DocumentTooBig:
         raise exception_response(509)
     except DocumentUnauthorized:

@@ -10,6 +10,8 @@ from webtest import TestApp
 
 
 def create_file_ondisk_from_resource(resource_name, path):
+    directory = os.path.dirname(path)
+    os.makedirs(directory, exist_ok = True)
     copyfile(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../resources/%s' % resource_name), path)
 
 
@@ -31,7 +33,7 @@ class ViewIntegrationTest(unittest.TestCase):
     def setUp(self):
         settings = {
             'ds.host': 'http://localhost:8080',
-            'ds.document.meta.path': '/api/index/search/%s/doc/%s',
+            'ds.document.meta.path': '/api/index/search/%s/_doc/%s',
             'ds.document.src.path': '/api/%s/documents/src/%s',
             'ds.document.max.size': '50000000',
             'ds.document.max.age': '259200',
@@ -58,26 +60,26 @@ class ViewIntegrationTest(unittest.TestCase):
         self.assertEqual(response.status, '401 Unauthorized')
 
     def test_thumbnail_with_cookie(self):
-        create_file_ondisk_from_resource('dummy.jpg', '/tmp/ds-preview--index-id')
-        response = self.app.get('/api/v1/thumbnail/index/id', headers=auth_headers())
+        create_file_ondisk_from_resource('dummy.jpg', '/tmp/documents/index/dummy-jpg/raw')
+        response = self.app.get('/api/v1/thumbnail/index/dummy-jpg', headers=auth_headers())
         self.assertEqual(response.status, '200 OK')
 
     def test_thumbnail_with_header(self):
-        create_file_ondisk_from_resource('dummy.jpg', '/tmp/ds-preview--index-id')
-        response = self.app.get('/api/v1/thumbnail/index/id', headers=auth_headers())
+        create_file_ondisk_from_resource('dummy.jpg', '/tmp/documents/index/dummy-jpg/raw')
+        response = self.app.get('/api/v1/thumbnail/index/dummy-jpg', headers=auth_headers())
         self.assertEqual(response.status, '200 OK')
 
     def test_info_json(self):
-        create_file_ondisk_from_resource('dummy.jpg', '/tmp/ds-preview--index-id')
-        response = self.app.get('/api/v1/thumbnail/index/id.json', headers=auth_headers())
+        create_file_ondisk_from_resource('dummy.jpg', '/tmp/documents/index/dummy-jpg/raw')
+        response = self.app.get('/api/v1/thumbnail/index/dummy-jpg.json', headers=auth_headers())
         self.assertEqual(response.status, '200 OK')
         self.assertEqual(response.headers['Content-Type'], 'application/json')
         self.assertEqual(json.loads(response.body.decode()), {"previewable": True, "pages": 1, "content": None, "content_type": "image/jpeg"})
 
     def test_ods_json(self):
-        create_file_ondisk_from_resource('dummy.ods', '/tmp/ds-preview--index-id')
+        create_file_ondisk_from_resource('dummy.ods', '/tmp/documents/index/dummy-ods/raw')
 
-        response = self.app.get('/api/v1/thumbnail/index/id.json?include-content=1', headers=auth_headers())
+        response = self.app.get('/api/v1/thumbnail/index/dummy-ods.json?include-content=1', headers=auth_headers())
 
         self.assertEqual(response.status, '200 OK')
         self.assertEqual(response.headers['Content-Type'], 'application/json')

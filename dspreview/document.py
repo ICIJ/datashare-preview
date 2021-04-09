@@ -123,12 +123,10 @@ class Document:
         return self.manager.get_jpeg_preview(**params)
 
 
-    def get_json_preview(self, params, content_type):
-        file_ext = params['file_ext']
-        file_path = params['file_path']
+    def get_json_preview(self, file_ext, content_type):
         # Only spreadsheet preview is supported yet
-        if self.is_content_type_spreadsheet(content_type) or self.is_ext_spreadsheet(file_ext):
-            return self.get_spreadsheet_preview(params)
+        if is_content_type_spreadsheet(content_type) or is_ext_spreadsheet(file_ext):
+            return get_spreadsheet_preview(params)
         else:
             return None
 
