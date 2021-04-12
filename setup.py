@@ -18,6 +18,7 @@ requires = [
 dev_requires = [
     'nose',
     'bumpversion',
+    'responses==0.12.0',
     'pyramid-debugtoolbar',
     'pyramid-exclog',
     'webtest'

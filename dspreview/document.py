@@ -20,6 +20,7 @@ class Document:
         self.index = index
         self.id = id
         self.routing = routing
+        self.source = {}
         self.delete_expired_documents()
         self.setup_target_directory()
         self.manager = PreviewManager(self.thumbnail_directory, create_folder = True)
@@ -45,12 +46,33 @@ class Document:
 
     @property
     def target_path(self):
-        return os.path.join(DOCUMENTS_PATH, self.index, self.id, 'raw')
+        if self.target_ext is None:
+            return os.path.join(self.target_directory, 'raw')
+        else:
+            return os.path.join(self.target_directory, 'raw' + self.target_ext)
 
 
     @property
     def target_directory(self):
         return os.path.join(DOCUMENTS_PATH, self.index, self.id)
+
+
+    @property
+    def target_ext(self):
+        if self.target_path_ext == '':
+            if self.target_content_type is None:
+                return None
+            return self.manager.get_file_extension()
+        return self.target_path_ext
+
+
+    @property
+    def target_path_ext(self):
+        return Path(self.source.get('path', '')).suffix
+
+    @property
+    def target_content_type(self):
+        return self.source.get('contentType', None)
 
 
     @property
@@ -85,6 +107,9 @@ class Document:
 
 
     def download_document_with_steam(self, cookies):
+        # Download meta if none
+        if not self.source: self.download_meta(cookies)
+        # Open a stream on the document URL
         response = requests.get(self.src_url, stream=True, cookies=cookies)
         with open(self.target_path, "wb") as file:
             for chunk in response.iter_content(chunk_size=1024):
@@ -101,31 +126,39 @@ class Document:
         return self.target_path
 
 
-    def check_user_authorization(self, cookies):
+    def download_meta(self, cookies):
         response = requests.get(self.meta_url, cookies=cookies)
         # Raise exception if the document request didn't succeed
-        if response.status_code == 401: raise DocumentUnauthorized()
+        if response.status_code == 401:
+            raise DocumentUnauthorized()
         # Any other error
         elif not response.ok:
             raise DocumentNotPreviewable()
-        # Find the content type and content length in nested attributes
-        json_response = response.json()
-        content_type = json_response.get('_source', {}).get('contentType', None)
-        content_length = json_response.get('_source', {}).get('contentLength', 0)
+        # Save the source meta
+        self.source = response.json().get('_source', {})
+
+
+    def check_user_authorization(self, cookies):
+        # Download meta if none
+        if not self.source: self.download_meta(cookies)
+        # Read contentType and contentLength from source
+        content_type = self.source.get('contentType', None)
+        content_length = self.source.get('contentLength', 0)
         # Raise exception if the contentType is not previewable
-        if not self.is_content_type_previewable(content_type): raise DocumentNotPreviewable()
+        if not self.is_content_type_previewable(content_type):
+            raise DocumentNotPreviewable()
         # Raise exception if the contentType is not previewable
-        if content_length > int(self.settings['ds.document.max.size']): raise DocumentTooBig()
-        return json_response
+        if content_length > int(self.settings['ds.document.max.size']):
+            raise DocumentTooBig()
 
 
     def get_jpeg_preview(self, params):
         return self.manager.get_jpeg_preview(**params)
 
 
-    def get_json_preview(self, file_ext, content_type):
+    def get_json_preview(self, params, content_type):
         # Only spreadsheet preview is supported yet
-        if is_content_type_spreadsheet(content_type) or is_ext_spreadsheet(file_ext):
+        if is_content_type_spreadsheet(content_type) or is_ext_spreadsheet(params['file_ext']):
             return get_spreadsheet_preview(params)
         else:
             return None
