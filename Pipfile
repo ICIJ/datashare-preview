@@ -18,7 +18,7 @@ pyramid-auto-env = "==0.1.2"
 waitress = "==1.4.3"
 requests = "==2.22.0"
 pygelf = "==0.3.6"
-apscheduler = "*"
+APScheduler = "*"
 
 [requires]
 python_version = "3.7"
