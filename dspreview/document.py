@@ -3,16 +3,10 @@ import requests
 
 from requests.compat import urljoin
 from datetime import datetime
-from tempfile import gettempdir
-from glob import glob
 from pathlib import Path
-from shutil import rmtree
-from dspreview.preview import THUMBNAILS_PATH
+from dspreview.cache import THUMBNAILS_PATH, DOCUMENTS_PATH
 from dspreview.spreadsheet import is_content_type_spreadsheet, is_ext_spreadsheet, get_spreadsheet_preview
 from preview_generator.manager import PreviewManager
-
-CACHE_PATH = os.environ.get('CACHE_PATH', gettempdir())
-DOCUMENTS_PATH = os.path.join(CACHE_PATH, 'documents')
 
 class Document:
     def __init__(self, settings, index, id, routing):
@@ -21,7 +15,6 @@ class Document:
         self.id = id
         self.routing = routing
         self.source = {}
-        self.delete_expired_documents()
         self.setup_target_directory()
         self.manager = PreviewManager(self.thumbnail_directory, create_folder = True)
 
@@ -80,30 +73,8 @@ class Document:
         return os.path.join(THUMBNAILS_PATH, self.index, self.id)
 
 
-    @property
-    def expired_documents(self):
-        documents = glob(os.path.join(CACHE_PATH, 'documents/*/*'))
-        thumbnails = glob(os.path.join(CACHE_PATH, 'thumbnails/*/*'))
-        directories = documents + thumbnails
-        return [ dir for dir in directories if self.is_directory_expired(dir) ]
-
-
     def setup_target_directory(self):
         return os.makedirs(self.target_directory, exist_ok = True)
-
-
-    def delete_expired_documents(self):
-        for document_directory in self.expired_documents:
-            rmtree(document_directory)
-
-
-    def get_directory_age(self, directory):
-        return datetime.now().timestamp() - os.path.getmtime(directory)
-
-
-    def is_directory_expired(self, directory):
-        max_age = int(self.settings['ds.document.max.age'])
-        return self.get_directory_age(directory) > max_age
 
 
     def download_document_with_steam(self, cookies):

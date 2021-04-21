@@ -5,6 +5,7 @@ from pyramid.httpexceptions import exception_response
 from pyramid.response import Response, FileResponse
 from pyramid.view import view_config
 
+from dspreview.cache import DocumentCache
 from dspreview.document import Document, DocumentTooBig, DocumentNotPreviewable, DocumentUnauthorized
 from dspreview.preview import get_size_height
 from dspreview.utils import is_truthy
@@ -52,6 +53,11 @@ def get_request_document(request):
     return Document(settings, index, id, routing)
 
 
+def purge_document_cache(request):
+    max_age = int(request.registry.settings.get('ds.document.max.age'))
+    DocumentCache(max_age).purge()
+
+
 @view_config(route_name='home')
 def home(_):
     v = pkg_resources.get_distribution("datashare_preview").version
@@ -81,6 +87,7 @@ def thumbnail(request):
 @view_config(route_name='info', renderer='json')
 def info(request):
     try:
+        purge_document_cache(request)
         document = get_request_document(request)
         params = get_preview_generator_params(request, document)
         content_type = document.manager.get_mimetype(params['file_path'], params['file_ext'])
