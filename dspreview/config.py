@@ -2,22 +2,21 @@ import configparser
 import os
 import sys
 
+from fastapi.logger import logger
 from dspreview.cache import DocumentCache
 from pathlib import Path
 from pydantic import BaseSettings
 from typing import Dict, Any
 
 
-def resolve_conf_path(conf_file: str):
-    parent_path = Path(__file__).parent
-    return (parent_path / ('../conf/%s' % conf_file)).resolve()
-
-
 def parse_settings_file(conf_file: str, section: str = 'app:main'):
-    conf_path = resolve_conf_path(conf_file)
+    conf_path = Path(conf_file).resolve()
     config = configparser.ConfigParser()
     config.read(conf_path)
-    return config[section] if section in config else None
+    if section in config:
+        logger.info('Loaded configuration from %s' % conf_path)
+        return config[section]
+    return {}
 
 
 def configparser_settings(settings: BaseSettings) -> Dict[str, Any]:
@@ -31,10 +30,9 @@ def configparser_settings(settings: BaseSettings) -> Dict[str, Any]:
 
 
 class Settings(BaseSettings):
-    use: str = "egg:datashare_preview"
     ds_host: str = "http://localhost:8080"
-    ds_document_meta_path: str = "/api/index/search/%%s/_doc/%%s"
-    ds_document_src_path: str = "/api/%%s/documents/src/%%s"
+    ds_document_meta_path: str = "/api/index/search/%s/_doc/%s"
+    ds_document_src_path: str = "/api/%s/documents/src/%s"
     ds_document_max_size: int = 50000000
     ds_document_max_age: int = 259200
     ds_session_cookie_enabled: str = "true"
@@ -43,7 +41,7 @@ class Settings(BaseSettings):
     ds_session_header_name: str = "X-Ds-Session-Id"
 
     class Config:
-        conf_file = os.environ.get('DS_CONF_FILE', 'development.ini')
+        conf_file = os.environ.get('DS_CONF_FILE', 'conf/development.ini')
         conf_section = os.environ.get('DS_CONF_SECTION', 'app:main')
 
         @classmethod

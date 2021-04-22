@@ -12,7 +12,6 @@ from dspreview.preview import get_size_height
 from dspreview.utils import is_truthy
 from typing import Optional
 
-log = logging.getLogger(__name__)
 app = FastAPI()
 
 app.add_middleware(
@@ -22,7 +21,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=[settings.ds_session_header_name],
 )
-
 
 def has_session_cookie(request):
     enabled = is_truthy(settings.ds_session_cookie_enabled)
