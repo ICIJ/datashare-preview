@@ -7,9 +7,9 @@ with open(os.path.join(here, 'README.rst')) as f:
     README = f.read()
 
 requires = [
-    'preview-generator==0.15.4"',
-    'requests==2.22.0"',
-    'pygelf==0.3.6"',
+    'preview-generator==0.15.4',
+    'requests==2.22.0',
+    'pygelf==0.3.6',
     'fastapi',
     'pydantic',
     'aiofiles',
