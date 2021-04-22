@@ -23,7 +23,7 @@ dev_requires = [
 ]
 
 setup(name='datashare-preview',
-      version='0.11.0',
+      version='1.0.0',
       description="App to show document previews with a backend Elasticsearch",
       long_description=README,
       classifiers=[
