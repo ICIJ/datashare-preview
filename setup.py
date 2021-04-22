@@ -7,21 +7,18 @@ with open(os.path.join(here, 'README.rst')) as f:
     README = f.read()
 
 requires = [
-    'preview-generator==0.15.4',
-    'pyramid==1.10',
-    'pyramid-auto-env==0.1.2',
-    'waitress==1.4.3',
-    'requests==2.22.0',
-    'pygelf==0.3.6',
+    'preview-generator==0.15.4"',
+    'requests==2.22.0"',
+    'pygelf==0.3.6"',
+    'fastapi',
+    'pydantic',
+    'aiofiles',
 ]
 
 dev_requires = [
-    'nose',
-    'bumpversion',
+    'bumpversion==0.5.3',
     'responses==0.12.0',
-    'pyramid-debugtoolbar',
-    'pyramid-exclog',
-    'webtest'
+    'nose',
 ]
 
 setup(name='datashare-preview',
@@ -30,7 +27,7 @@ setup(name='datashare-preview',
       long_description=README,
       classifiers=[
           "Programming Language :: Python",
-          "Framework :: Pyramid",
+          "Framework :: FastAPI",
           "Topic :: Internet :: WWW/HTTP",
           "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
       ],
