@@ -20,13 +20,13 @@ run:
 		pipenv run uvicorn dspreview.main:app --reload --host 0.0.0.0 --port 5000
 
 minor:
-		pipenv run bumpversion --commit --tag --current-version ${CURRENT_VERSION} minor setup.py
+		pipenv run bump2version --commit --tag --current-version ${CURRENT_VERSION} minor setup.py
 
 major:
-		pipenv run bumpversion --commit --tag --current-version ${CURRENT_VERSION} major setup.py
+		pipenv run bump2version --commit --tag --current-version ${CURRENT_VERSION} major setup.py
 
 patch:
-		pipenv run bumpversion --commit --tag --current-version ${CURRENT_VERSION} patch setup.py
+		pipenv run bump2version --commit --tag --current-version ${CURRENT_VERSION} patch setup.py
 
 docker-run:
 		docker run -it --rm \
