@@ -46,6 +46,6 @@ setup(name='datashare-preview',
       test_suite="nose.collector",
       entry_points={
         'paste.app_factory': [
-            'main = dspreview:main',
+            'main = dspreview.main:app',
         ],
       })
