@@ -19,10 +19,10 @@ class SpreadsheetTest(AbstractTest):
                       content_type='application/json')
         create_file_ondisk_from_resource('dummy.ods', '/tmp/documents/my-index/dummy-ods/raw.ods')
 
-        response = self.app.get('/api/v1/thumbnail/my-index/dummy-ods.json?include-content=1', headers=auth_headers())
-        response_body = json.loads(response.body.decode())
+        response = self.client.get('/api/v1/thumbnail/my-index/dummy-ods.json?include-content=1', headers=auth_headers())
+        response_body = response.json()
 
-        self.assertEqual(response.status, '200 OK')
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(response.headers['Content-Type'], 'application/json')
         self.assertEqual(response_body['content'], {
             'meals': [['name'], ['couscous'], ['hummus'], ['paella']],

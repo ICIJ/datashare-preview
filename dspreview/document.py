@@ -5,12 +5,12 @@ from requests.compat import urljoin
 from datetime import datetime
 from pathlib import Path
 from dspreview.cache import THUMBNAILS_PATH, DOCUMENTS_PATH
+from dspreview.config import settings
 from dspreview.spreadsheet import is_content_type_spreadsheet, is_ext_spreadsheet, get_spreadsheet_preview
 from preview_generator.manager import PreviewManager
 
 class Document:
-    def __init__(self, settings, index, id, routing):
-        self.settings = settings
+    def __init__(self, index, id, routing):
         self.index = index
         self.id = id
         self.routing = routing
@@ -21,7 +21,7 @@ class Document:
 
     @property
     def meta_url(self):
-        url = urljoin(self.settings['ds.host'], self.settings['ds.document.meta.path'] % (self.index, self.id))
+        url = urljoin(settings.ds_host, settings.ds_document_meta_path % (self.index, self.id))
         # Optional routing parameter
         if self.routing is not None:
             url = urljoin(url, '?_source=contentLength,contentType,path&routing=%s' % self.routing)
@@ -30,7 +30,7 @@ class Document:
 
     @property
     def src_url(self):
-        url = urljoin(self.settings['ds.host'], self.settings['ds.document.src.path'] % (self.index, self.id))
+        url = urljoin(settings.ds_host, settings.ds_document_src_path % (self.index, self.id))
         # Optional routing parameter
         if self.routing is not None:
             url = urljoin(url, '?routing=%s' % self.routing)
@@ -119,7 +119,7 @@ class Document:
         if not self.is_content_type_previewable(content_type):
             raise DocumentNotPreviewable()
         # Raise exception if the contentType is not previewable
-        if content_length > int(self.settings['ds.document.max.size']):
+        if content_length > int(settings.ds_document_max_size):
             raise DocumentTooBig()
 
 

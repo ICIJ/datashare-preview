@@ -4,10 +4,11 @@ import unittest
 import urllib.parse
 
 from concurrent.futures import ThreadPoolExecutor
+from dspreview.main import app
+from dspreview.config import settings
+from fastapi.testclient import TestClient
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from shutil import copyfile
-from dspreview import main
-from webtest import TestApp
 
 
 def create_file_ondisk_from_resource(resource_name, path):
@@ -25,24 +26,7 @@ def auth_headers():
 class AbstractTest(unittest.TestCase):
 
     def setUp(self):
-        self.settings = {
-            'ds.host': 'http://localhost:8080',
-            'ds.document.meta.path': '/api/index/search/%s/_doc/%s',
-            'ds.document.src.path': '/api/%s/documents/src/%s',
-            'ds.document.max.size': '50000000',
-            'ds.document.max.age': '259200',
-            'ds.session.cookie.enabled': 'true',
-            'ds.session.cookie.name': '_ds_session_id',
-            'ds.session.header.enabled': 'true',
-            'ds.session.header.name': 'X-Ds-Session-Id',
-        }
-        app = main({}, **self.settings)
-        self.app = TestApp(app)
+        self.client = TestClient(app)
 
     def datashare_url(self, path):
-        return urllib.parse.urljoin(self.settings['ds.host'], path)
-
-    def assert_cors_headers_ok(self, response):
-        self.assertEqual('*', response.headers.get('Access-Control-Allow-Origin'))
-        self.assertEqual('GET', response.headers.get('Access-Control-Allow-Methods'))
-        self.assertEqual('x-ds-session-id', response.headers.get('Access-Control-Allow-Headers'))
+        return urllib.parse.urljoin(settings.ds_host, path)

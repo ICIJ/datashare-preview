@@ -17,7 +17,7 @@ install-virtualenv:
 		pipenv install
 
 run:
-		pipenv run pserve conf/development.ini --reload
+		pipenv run uvicorn dspreview.main:app --reload --host 0.0.0.0 --port 5000
 
 minor:
 		pipenv run bumpversion --commit --tag --current-version ${CURRENT_VERSION} minor setup.py
