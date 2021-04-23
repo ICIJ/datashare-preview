@@ -4,6 +4,7 @@ import pkg_resources
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import PlainTextResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi_utils.tasks import repeat_every
 
 from dspreview.cache import DocumentCache
 from dspreview.config import settings
@@ -62,7 +63,9 @@ def get_request_document(request):
     return Document(index, id, routing)
 
 
-def purge_document_cache():
+@app.on_event("startup")
+@repeat_every(seconds=60 * 10)
+async def remove_expired_tokens_task() -> None:
     max_age = int(settings.ds_document_max_age)
     DocumentCache(max_age).purge()
 
@@ -76,7 +79,6 @@ async def home():
 @app.get("/api/v1/thumbnail/{index}/{id}.json")
 async def info(request: Request):
     try:
-        purge_document_cache()
         document = get_request_document(request)
         params = get_preview_generator_params(request, document)
         content_type = document.manager.get_mimetype(params['file_path'], params['file_ext'])

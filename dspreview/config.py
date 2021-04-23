@@ -9,7 +9,7 @@ from pydantic import BaseSettings
 from typing import Dict, Any
 
 
-def parse_settings_file(conf_file: str, section: str = 'app:main'):
+def parse_settings_file(conf_file: str, section: str = 'app:main') -> dict:
     conf_path = Path(conf_file).resolve()
     config = configparser.ConfigParser()
     config.read(conf_path)

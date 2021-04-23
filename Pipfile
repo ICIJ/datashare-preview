@@ -15,6 +15,7 @@ pygelf = "==0.3.6"
 fastapi = "*"
 pydantic = "*"
 aiofiles = "*"
+fastapi-utils = "*"
 
 [requires]
 python_version = "3.8"

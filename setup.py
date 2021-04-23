@@ -14,6 +14,7 @@ requires = [
     'pydantic',
     'aiofiles',
     'uvicorn[standard]',
+    'fastapi-utils'
 ]
 
 dev_requires = [
