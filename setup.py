@@ -21,6 +21,7 @@ dev_requires = [
     'bumpversion==0.5.3',
     'respx',
     'nose',
+    'requests'
 ]
 
 setup(name='datashare-preview',
