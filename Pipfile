@@ -5,17 +5,17 @@ verify_ssl = true
 
 [dev-packages]
 bumpversion = "==0.5.3"
-responses = "==0.12.0"
 nose = "*"
+respx = "*"
 
 [packages]
 preview-generator = "==0.15.4"
-requests = "==2.22.0"
 pygelf = "==0.3.6"
 fastapi = "*"
 pydantic = "*"
 aiofiles = "*"
 fastapi-utils = "*"
+httpx = "==0.17.1"
 
 [requires]
 python_version = "3.8"

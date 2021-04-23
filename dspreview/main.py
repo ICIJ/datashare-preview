@@ -45,13 +45,13 @@ def get_cookies_from_forwarded_headers(request):
     return request.cookies
 
 
-def get_preview_generator_params(request, document):
+async def get_preview_generator_params(request, document):
     size = request.query_params.get('size', 'xs')
     page = int(request.query_params.get('page', 0))
     height = get_size_height(size)
     cookies = get_cookies_from_forwarded_headers(request)
-    document.download_meta(cookies)
-    file_path = document.download_document(cookies)
+    await document.download_meta(cookies)
+    file_path = await document.download_document(cookies)
     file_ext = document.target_ext
     return dict(file_path=file_path, file_ext=file_ext, height=height, page=page)
 
@@ -80,7 +80,7 @@ async def home():
 async def info(request: Request):
     try:
         document = get_request_document(request)
-        params = get_preview_generator_params(request, document)
+        params = await get_preview_generator_params(request, document)
         content_type = document.manager.get_mimetype(params['file_path'], params['file_ext'])
         pages = document.manager.get_page_nb(params['file_path'], params['file_ext'])
         # Disabled content preview if not requested explicitely
@@ -106,7 +106,7 @@ async def info(request: Request):
 async def thumbnail(request: Request):
     try:
         document = get_request_document(request)
-        params = get_preview_generator_params(request, document)
+        params = await get_preview_generator_params(request, document)
         return FileResponse(document.get_jpeg_preview(params))
     except DocumentTooBig:
         raise HTTPException(status_code=509, detail="Document too big")

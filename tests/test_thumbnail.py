@@ -1,6 +1,7 @@
 import json
-import responses
+import respx
 
+from httpx import Response
 from .test_abstract import auth_headers, create_file_ondisk_from_resource
 from .test_abstract import AbstractTest
 
@@ -12,11 +13,10 @@ class ThumbnailTest(AbstractTest):
         "contentLength": 123
     }
 
-    @responses.activate
+    @respx.mock
     def test_info_json(self):
-        responses.add(responses.GET, self.datashare_url('/api/index/search/my-index/_doc/dummy-jpg'),
-                      body=json.dumps({ "_source": self._source }), status=200,
-                      content_type='application/json')
+        mocked_url = self.datashare_url('/api/index/search/my-index/_doc/dummy-jpg')
+        respx.get(mocked_url).mock(return_value=Response(200, json={ "_source": self._source }))
         create_file_ondisk_from_resource('dummy.jpg', '/tmp/documents/my-index/dummy-jpg/raw.jpg')
 
         response = self.client.get('/api/v1/thumbnail/my-index/dummy-jpg.json', headers=auth_headers())
@@ -24,8 +24,9 @@ class ThumbnailTest(AbstractTest):
         self.assertEqual(response.headers['Content-Type'], 'application/json')
         self.assertEqual(response.json(), {"previewable": True, "pages": 1, "content": None, "content_type": "image/jpeg"})
 
-    @responses.activate
+    @respx.mock
     def test_thumbnail_with_neither_cookie_nor_header(self):
-        responses.add(responses.GET, self.datashare_url('/api/index/search/my-index/_doc/dummy-id'), status=401)
+        mocked_url = self.datashare_url('/api/index/search/my-index/_doc/dummy-id')
+        respx.get(mocked_url).mock(return_value=Response(401))
         response = self.client.get('/api/v1/thumbnail/my-index/dummy-id')
         self.assertEqual(response.status_code, 401)

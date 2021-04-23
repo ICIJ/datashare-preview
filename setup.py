@@ -8,7 +8,7 @@ with open(os.path.join(here, 'README.rst')) as f:
 
 requires = [
     'preview-generator==0.15.4',
-    'requests==2.22.0',
+    'httpx==0.17.1',
     'pygelf==0.3.6',
     'fastapi',
     'pydantic',
@@ -19,7 +19,7 @@ requires = [
 
 dev_requires = [
     'bumpversion==0.5.3',
-    'responses==0.12.0',
+    'respx',
     'nose',
 ]
 

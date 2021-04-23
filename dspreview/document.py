@@ -1,13 +1,13 @@
 import os
-import requests
+import httpx
 
-from requests.compat import urljoin
 from datetime import datetime
 from pathlib import Path
 from dspreview.cache import THUMBNAILS_PATH, DOCUMENTS_PATH
 from dspreview.config import settings
 from dspreview.spreadsheet import is_content_type_spreadsheet, is_ext_spreadsheet, get_spreadsheet_preview
 from preview_generator.manager import PreviewManager
+from urllib.parse import urljoin
 
 class Document:
     def __init__(self, index, id, routing):
@@ -77,41 +77,42 @@ class Document:
         return os.makedirs(self.target_directory, exist_ok = True)
 
 
-    def download_document_with_steam(self, cookies):
+    async def download_document_with_steam(self, cookies):
         # Download meta if none
-        if not self.source: self.download_meta(cookies)
+        if not self.source: await self.download_meta(cookies)
         # Open a stream on the document URL
-        response = requests.get(self.src_url, stream=True, cookies=cookies)
-        with open(self.target_path, "wb") as file:
-            for chunk in response.iter_content(chunk_size=1024):
-                if chunk:
-                    file.write(chunk)
-            return self.target_path
-
-
-    def download_document(self, cookies):
-        # Ensure the file style doesn't exist
-        if not Path(self.target_path).exists():
-            # Build the document URL
-            self.download_document_with_steam(cookies)
+        async with httpx.AsyncClient() as client:
+            async with client.stream('GET', self.src_url, cookies=cookies) as response:
+                with open(self.target_path, "wb") as file:
+                    async for chunk in response.aiter_bytes():
+                        file.write(chunk)
         return self.target_path
 
 
-    def download_meta(self, cookies):
-        response = requests.get(self.meta_url, cookies=cookies)
+    async def download_document(self, cookies):
+        # Ensure the file style doesn't exist
+        if not Path(self.target_path).exists():
+            # Build the document URL
+            await self.download_document_with_steam(cookies)
+        return self.target_path
+
+
+    async def download_meta(self, cookies):
+        async with httpx.AsyncClient() as client:
+            response = await client.get(self.meta_url, cookies=cookies)
         # Raise exception if the document request didn't succeed
         if response.status_code == 401:
             raise DocumentUnauthorized()
         # Any other error
-        elif not response.ok:
+        elif response.status_code != httpx.codes.OK:
             raise DocumentNotPreviewable()
         # Save the source meta
         self.source = response.json().get('_source', {})
 
 
-    def check_user_authorization(self, cookies):
+    async def check_user_authorization(self, cookies):
         # Download meta if none
-        if not self.source: self.download_meta(cookies)
+        if not self.source: await self.download_meta(cookies)
         # Read contentType and contentLength from source
         content_type = self.source.get('contentType', None)
         content_length = self.source.get('contentLength', 0)

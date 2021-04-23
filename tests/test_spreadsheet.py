@@ -1,6 +1,7 @@
 import json
-import responses
+import respx
 
+from httpx import Response
 from .test_abstract import auth_headers, create_file_ondisk_from_resource
 from .test_abstract import AbstractTest
 
@@ -12,11 +13,10 @@ class SpreadsheetTest(AbstractTest):
         "contentLength": 123
     }
 
-    @responses.activate
+    @respx.mock
     def test_ods_json(self):
-        responses.add(responses.GET, self.datashare_url('/api/index/search/my-index/_doc/dummy-ods'),
-                      body=json.dumps({ "_source": self._source }), status=200,
-                      content_type='application/json')
+        mocked_url = self.datashare_url('/api/index/search/my-index/_doc/dummy-ods')
+        respx.get(mocked_url).mock(return_value=Response(200, json={ "_source": self._source }))
         create_file_ondisk_from_resource('dummy.ods', '/tmp/documents/my-index/dummy-ods/raw.ods')
 
         response = self.client.get('/api/v1/thumbnail/my-index/dummy-ods.json?include-content=1', headers=auth_headers())
