@@ -22,7 +22,17 @@ class ThumbnailTest(AbstractTest):
         response = self.client.get('/api/v1/thumbnail/my-index/dummy-jpg.json', headers=auth_headers())
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.headers['Content-Type'], 'application/json')
-        self.assertEqual(response.json(), {"previewable": True, "pages": 1, "content": None, "content_type": "image/jpeg"})
+        self.assertEqual(response.json(), { "previewable": True, "pages": 1, "content": None, "content_type": "image/jpeg" })
+
+
+    @respx.mock
+    def test_wrong_info_json(self):
+        mocked_url = self.datashare_url('/api/index/search/my-index/_doc/wrong-jpg')
+        respx.get(mocked_url).mock(return_value=Response(500, json={ "error": None }))
+        response = self.client.get('/api/v1/thumbnail/my-index/wrong-jpg.json', headers=auth_headers())
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), { "previewable": False, "pages": 0 })
+
 
     @respx.mock
     def test_thumbnail_with_neither_cookie_nor_header(self):
@@ -30,3 +40,11 @@ class ThumbnailTest(AbstractTest):
         respx.get(mocked_url).mock(return_value=Response(401))
         response = self.client.get('/api/v1/thumbnail/my-index/dummy-id')
         self.assertEqual(response.status_code, 401)
+
+
+    @respx.mock
+    def test_wrong_thunbnail(self):
+        mocked_url = self.datashare_url('/api/index/search/my-index/_doc/wrong-jpg')
+        respx.get(mocked_url).mock(return_value=Response(500, json={ "error": None }))
+        response = self.client.get('/api/v1/thumbnail/my-index/wrong-jpg', headers=auth_headers())
+        self.assertEqual(response.status_code, 403)
