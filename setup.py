@@ -6,24 +6,6 @@ here = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(here, 'README.rst')) as f:
     README = f.read()
 
-requires = [
-    'preview-generator==0.15.4',
-    'httpx==0.17.1',
-    'pygelf==0.3.6',
-    'fastapi',
-    'pydantic',
-    'aiofiles',
-    'uvicorn[standard]',
-    'fastapi-utils'
-]
-
-dev_requires = [
-    'bumpversion==0.5.3',
-    'respx',
-    'nose',
-    'requests'
-]
-
 setup(name='datashare-preview',
       version='1.0.0',
       description="App to show document previews with a backend Elasticsearch",
@@ -42,9 +24,23 @@ setup(name='datashare-preview',
       packages=find_packages(exclude=("*.tests", "*.tests.*", "tests.*", "tests", "*.test_utils")),
       include_package_data=True,
       zip_safe=False,
-      install_requires=requires,
+      install_requires=[
+        'preview-generator==0.29',
+        'pygelf==0.3.6',
+        'fastapi',
+        'pydantic',
+        'aiofiles',
+        'fastapi-utils',
+        'httpx==0.23.0',
+        'uvicorn[standard]',
+     ],
       extras_require={
-        'dev': dev_requires,
+        'dev': [
+            'bumpversion==0.5.3',
+            'respx',
+            'nose',
+            'requests'
+        ],
       },
       test_suite="nose.collector",
       entry_points={

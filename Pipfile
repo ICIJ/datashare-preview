@@ -17,9 +17,7 @@ pydantic = "*"
 aiofiles = "*"
 fastapi-utils = "*"
 httpx = "==0.23.0"
+uvicorn = {extras = ["standard"], version = "*"}
 
 [requires]
 python_version = "3.8"
-
-[packages.uvicorn]
-extras = [ "standard",]
