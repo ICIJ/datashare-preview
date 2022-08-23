@@ -8,7 +8,7 @@ with open(os.path.join(here, 'README.rst')) as f:
 
 requires = [
     'preview-generator==0.15.4',
-    'httpx==0.17.1',
+    'httpx==0.23.0',
     'pygelf==0.3.6',
     'fastapi',
     'pydantic',
