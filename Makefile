@@ -19,6 +19,9 @@ install-virtualenv:
 run:
 		pipenv run uvicorn dspreview.main:app --reload --host 0.0.0.0 --port 5000
 
+test:
+		pipenv run python setup.py test
+
 minor:
 		pipenv run bumpversion --commit --tag --current-version ${CURRENT_VERSION} minor setup.py
 
