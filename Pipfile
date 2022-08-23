@@ -10,13 +10,13 @@ respx = "*"
 requests = "*"
 
 [packages]
-preview-generator = "==0.15.4"
+preview-generator = "==0.29"
 pygelf = "==0.3.6"
 fastapi = "*"
 pydantic = "*"
 aiofiles = "*"
 fastapi-utils = "*"
-httpx = "==0.17.1"
+httpx = "==0.23.0"
 
 [requires]
 python_version = "3.8"
