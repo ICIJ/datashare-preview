@@ -2,7 +2,9 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/python:3.8
+      - image: cimg/python:3.8
+        environment:
+          PIPENV_VENV_IN_PROJECT: true
 
     steps:
       - checkout
@@ -17,10 +19,8 @@ jobs:
           command: |
             sudo apt-get update && sudo apt-get install exiftool libfile-mimeinfo-perl gnumeric libreoffice
 
-      - run:
-          name: install pipenv package
-          command: |
-            sudo pip install pipenv
+      - python/install-packages:
+          pkg-manager: pipenv
 
       - run:
           name: install pip dependencies
@@ -38,7 +38,3 @@ jobs:
           name: run tests
           command: |
             pipenv run nosetests
-
-      - store_artifacts:
-          path: test-reports
-          destination: test-reports
