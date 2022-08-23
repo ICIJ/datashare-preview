@@ -1,8 +1,9 @@
 FROM python:3.8
 
-RUN apt-get update && apt-get install -y zlib1g-dev libjpeg-dev xterm \
+RUN apt-get update && apt-get install -y zlib1g-dev libjpeg-dev ibjpeg-dev \
   scribus libreoffice gnumeric inkscape xvfb qpdf \
-  python3-pythonmagick poppler-utils libfile-mimeinfo-perl libimage-exiftool-perl
+  imagemagick libmagic1 webp xterm python3-pythonmagick \
+  poppler-utils libfile-mimeinfo-perl libimage-exiftool-perl
 
 WORKDIR /tmp
 ADD https://sno.phy.queensu.ca/~phil/exiftool/Image-ExifTool-11.11.tar.gz .

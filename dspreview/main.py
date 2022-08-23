@@ -53,8 +53,7 @@ async def get_preview_generator_params(request, document):
     await document.download_meta(cookies)
     await document.check_user_authorization(cookies)
     file_path = await document.download_document(cookies)
-    file_ext = document.target_ext
-    return dict(file_path=file_path, file_ext=file_ext, height=height, page=page)
+    return dict(file_path=file_path, height=height, page=page)
 
 
 def get_request_document(request):
@@ -86,7 +85,7 @@ async def info(request: Request):
     try:
         document = get_request_document(request)
         params = await get_preview_generator_params(request, document)
-        pages = document.get_manager_page_nb(params['file_path'], params['file_ext'])
+        pages = document.get_manager_page_nb(params['file_path'])
         # Disabled content preview if not requested explicitely
         if request.query_params.get('include-content'):
             content = document.get_json_preview(params, document.target_content_type)
