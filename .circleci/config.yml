@@ -15,7 +15,7 @@ jobs:
       - run:
           name: install system dependencies
           command: |
-            sudo apt-get update && sudo apt-get install exiftool pythonmagick libfile-mimeinfo-perl gnumeric libreoffice
+            sudo apt-get update && sudo apt-get install exiftool python3-pythonmagick libfile-mimeinfo-perl gnumeric libreoffice
 
       - run:
           name: install pipenv package
