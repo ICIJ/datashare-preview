@@ -8,10 +8,8 @@ import subprocess
 
 SPREADSHEET_TYPES = (
     'application/vnd.oasis.opendocument.spreadsheet',
-    'application/vnd.oasis.opendocument.spreadsheet-template',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'application/vnd.ms-excel',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.template',
     'text/csv',)
 
 SPREADSHEET_EXTS = ('.xls', '.xlsx', '.ods', '.csv', '.tsv')
@@ -36,16 +34,16 @@ def csv_to_dict(file_path):
             data.append(row)
     return data
 
-def get_spreadsheet_preview(params):
+def get_spreadsheet_preview(file_path):
     sheets = {}
     # Work inside a temporary directory
     with TemporaryDirectory(prefix='gnumeric-') as output_dir:
         # Convert the entire spreadsheet and create one file per-sheet
-        for sheet_file in convert_spreadsheet_to_csv(params['file_path'], output_dir):
+        for sheet_file in convert_spreadsheet_to_csv(file_path, output_dir):
             # Remove any extention from the file name
             sheet_name = basename(splitext(sheet_file)[0])
             # Avoid using the file name as sheet name
-            sheet_name = 'main' if sheet_name == basename(params['file_path']) else sheet_name
+            sheet_name = 'main' if sheet_name == basename(file_path) else sheet_name
             # Save the sheet data
             sheets[sheet_name] = csv_to_dict(sheet_file)
     return sheets

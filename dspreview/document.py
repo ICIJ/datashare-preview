@@ -3,9 +3,10 @@ import httpx
 
 from datetime import datetime
 from pathlib import Path
+from dspreview.content_types import SUPPORTED_CONTENT_TYPES
 from dspreview.cache import THUMBNAILS_PATH, DOCUMENTS_PATH
 from dspreview.config import settings
-from dspreview.spreadsheet import is_content_type_spreadsheet, is_ext_spreadsheet, get_spreadsheet_preview
+from dspreview.spreadsheet import is_content_type_spreadsheet, get_spreadsheet_preview
 from preview_generator.manager import PreviewManager
 from urllib.parse import urljoin
 
@@ -129,8 +130,8 @@ class Document:
 
 
     def get_json_preview(self, params, content_type):
-        # Only spreadsheet preview is supported yet
-        if is_content_type_spreadsheet(content_type) or is_ext_spreadsheet(params['file_ext']):
+        # Only spreadsheet preview is supported yet in JSON
+        if is_content_type_spreadsheet(content_type):
             return get_spreadsheet_preview(params)
         else:
             return None
@@ -145,7 +146,7 @@ class Document:
 
 
     def is_content_type_previewable(self, content_type):
-        return content_type in self.manager.get_supported_mimetypes()
+        return content_type in SUPPORTED_CONTENT_TYPES
 
 
 class DocumentUnauthorized(Exception):
