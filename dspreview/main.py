@@ -73,8 +73,12 @@ async def remove_expired_tokens_task() -> None:
 
 @app.get("/", response_class=PlainTextResponse)
 async def home():
-    v = pkg_resources.get_distribution("datashare_preview").version
-    return 'Datashare preview v%s' % v
+    try:
+        v = pkg_resources.get_distribution("datashare_preview").version
+        return 'Datashare preview v%s' % v
+    except pkg_resources.DistributionNotFound:
+        return 'Datashare preview'
+
 
 
 @app.get("/api/v1/thumbnail/{index}/{id}.json")
