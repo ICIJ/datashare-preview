@@ -20,7 +20,7 @@ jobs:
       - run:
           name: install pipenv package
           command: |
-            sudo pip install pipenv
+            pip install pipenv
 
       - run:
           name: install pip dependencies
