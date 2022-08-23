@@ -13,31 +13,26 @@ jobs:
           key: deps9-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
 
       - run:
-          name: install system dependencies
+          name: Install system dependencies
           command: |
             sudo apt-get update && sudo apt-get install exiftool python3-pythonmagick libfile-mimeinfo-perl gnumeric libreoffice
 
       - run:
-          name: install pipenv package
+          name: Install pipenv package
           command: |
             pip install pipenv
 
       - run:
-          name: install pip dependencies
+          name: Install pip dependencies
           command: |
             pipenv install -d      
-            
-      - run:
-          name: create a distribution
-          command: |
-            make dist
 
       - save_cache:
           key: deps9-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
           paths:
             - ".venv"
-
+            
       - run:
-          name: run tests
+          name: Create a distribution and run tests
           command: |
-            make test
+            make dist test
