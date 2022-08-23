@@ -14,7 +14,7 @@ dist:
 
 install-virtualenv:
 		# Check if venv folder is already created and create it
-		pipenv install
+		pipenv install -d
 
 run:
 		pipenv run uvicorn dspreview.main:app --reload --host 0.0.0.0 --port 5000

@@ -25,7 +25,12 @@ jobs:
       - run:
           name: install pip dependencies
           command: |
-            pipenv install -d
+            pipenv install -d      
+            
+      - run:
+          name: create a distribution
+          command: |
+            make dist
 
       - save_cache:
           key: deps9-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
@@ -35,4 +40,4 @@ jobs:
       - run:
           name: run tests
           command: |
-            pipenv run nosetests
+            make test
