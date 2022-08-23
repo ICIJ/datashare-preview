@@ -136,6 +136,14 @@ class Document:
             return None
 
 
+    def get_manager_mimetype(self, file_path, file_ext):
+        return self.manager.get_mimetype(file_path, file_ext)
+
+
+    def get_manager_page_nb(self, file_path, file_ext):
+        return self.manager.get_page_nb(file_path, file_ext)
+
+
     def is_content_type_previewable(self, content_type):
         return content_type in self.manager.get_supported_mimetypes()
 

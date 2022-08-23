@@ -81,8 +81,8 @@ async def info(request: Request):
     try:
         document = get_request_document(request)
         params = await get_preview_generator_params(request, document)
-        content_type = document.manager.get_mimetype(params['file_path'], params['file_ext'])
-        pages = document.manager.get_page_nb(params['file_path'], params['file_ext'])
+        content_type = document.get_manager_mimetype(params['file_path'], params['file_ext'])
+        pages = document.get_manager_page_nb(params['file_path'], params['file_ext'])
         # Disabled content preview if not requested explicitely
         if request.query_params.get('include-content'):
             content = document.get_json_preview(params, content_type)
