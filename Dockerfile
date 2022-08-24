@@ -1,15 +1,16 @@
 FROM python:3.8
 
-RUN apt-get update && apt-get install -y zlib1g-dev libjpeg-dev ibjpeg-dev \
-  scribus libreoffice gnumeric inkscape xvfb qpdf \
-  imagemagick libmagic1 webp xterm python3-pythonmagick \
-  poppler-utils libfile-mimeinfo-perl libimage-exiftool-perl
+RUN apt-get update && apt-get install -y \
+      xterm xvfb qpdf \
+      poppler-utils libfile-mimeinfo-perl libimage-exiftool-perl \
+      ghostscript libsecret-1-0 zlib1g-dev libjpeg-dev imagemagick libmagic1 webp \
+      scribus libreoffice gnumeric inkscape
 
 WORKDIR /tmp
-ADD https://sno.phy.queensu.ca/~phil/exiftool/Image-ExifTool-11.11.tar.gz .
+ADD https://exiftool.org/Image-ExifTool-12.44.tar.gz .
 
-RUN gzip -dc Image-ExifTool-11.11.tar.gz | tar -xf - ; \
-  cd Image-ExifTool-11.11 ; \
+RUN gzip -dc Image-ExifTool-12.44.tar.gz | tar -xf - ; \
+  cd Image-ExifTool-12.44 ; \
   perl Makefile.PL ; \
   make install
 
