@@ -16,9 +16,9 @@ jobs:
           name: Install system dependencies
           command: >
             sudo apt-get update && 
-            sudo apt-get -y install
-              poppler-utils libfile-mimeinfo-perl libimage-exiftool-perl 
-              ghostscript libsecret-1-0 zlib1g-dev libjpeg-dev imagemagick libmagic1 webp 
+            sudo apt-get -y install \
+              poppler-utils libfile-mimeinfo-perl libimage-exiftool-perl \
+              ghostscript libsecret-1-0 zlib1g-dev libjpeg-dev imagemagick libmagic1 webp \
               gnumeric libreoffice
 
       - run:
