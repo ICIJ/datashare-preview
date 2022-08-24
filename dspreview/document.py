@@ -40,7 +40,7 @@ class Document:
 
     @property
     def target_path(self):
-        if self.target_ext is '':
+        if self.target_ext == '':
             return os.path.join(self.target_directory, 'raw')
         else:
             return os.path.join(self.target_directory, 'raw' + self.target_ext)
@@ -132,6 +132,7 @@ class Document:
 
 
     def get_jpeg_preview(self, params):
+        params = {**params, **dict(file_path=self.target_path)}
         return self.manager.get_jpeg_preview(**params)
 
 
