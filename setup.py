@@ -7,7 +7,7 @@ with open(os.path.join(here, 'README.rst')) as f:
     README = f.read()
 
 setup(name='datashare-preview',
-      version='1.0.0',
+      version='1.1.0',
       description="App to show document previews with a backend Elasticsearch",
       long_description=README,
       classifiers=[
