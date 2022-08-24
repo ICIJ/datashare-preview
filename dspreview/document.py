@@ -40,7 +40,7 @@ class Document:
 
     @property
     def target_path(self):
-        if self.target_ext is None:
+        if self.target_ext is '':
             return os.path.join(self.target_directory, 'raw')
         else:
             return os.path.join(self.target_directory, 'raw' + self.target_ext)
@@ -55,7 +55,7 @@ class Document:
     def target_ext(self):
         if self.target_path_ext == '':
             if self.target_content_type is None:
-                return None
+                return ''
             return self.manager.get_file_extension()
         return self.target_path_ext
 
@@ -63,6 +63,12 @@ class Document:
     @property
     def target_path_ext(self):
         return Path(self.source.get('path', '')).suffix
+
+    
+    @property
+    def target_path_without_ext(self):
+        return str(Path(self.target_path).with_suffix(''))
+
 
     @property
     def target_content_type(self):
@@ -129,16 +135,16 @@ class Document:
         return self.manager.get_jpeg_preview(**params)
 
 
-    def get_json_preview(self, params, content_type):
+    def get_json_preview(self):
         # Only spreadsheet preview is supported yet in JSON
-        if is_content_type_spreadsheet(content_type):
-            return get_spreadsheet_preview(params)
+        if is_content_type_spreadsheet(self.target_content_type):
+            return get_spreadsheet_preview(self.target_path)
         else:
             return None
 
 
-    def get_manager_page_nb(self, file_path):
-        return self.manager.get_page_nb(file_path)
+    def get_manager_page_nb(self):
+        return self.manager.get_page_nb(self.target_path)
 
 
     def is_content_type_previewable(self, content_type):
