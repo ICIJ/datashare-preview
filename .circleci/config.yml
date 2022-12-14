@@ -10,7 +10,8 @@ jobs:
       - checkout
 
       - restore_cache:
-          key: deps9-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+          name: Restore virtualenvs from previous builds
+          key: virtualenvs-dependencies-cache-{{ .Branch }}-{{ checksum "poetry.lock" }}
 
       - run:
           name: Install system dependencies
@@ -22,20 +23,19 @@ jobs:
               gnumeric libreoffice
 
       - run:
-          name: Install pipenv package
+          name: Install Poetry and project's pip packages
           command: |
-            pip install pipenv
-
-      - run:
-          name: Install pip dependencies
-          command: |
-            pipenv install -d
+            export TERM=xterm-256color
+            export COLUMNS=150
+            curl -sSL https://install.python-poetry.org | python3 -
+            poetry install --with dev
 
       - save_cache:
-          key: deps9-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+          name: Save virtualenvs cache for future builds
+          key: virtualenvs-dependencies-cache-{{ .Branch }}-{{ checksum "poetry.lock" }}
           paths:
-            - ".venv"
-            
+            - ~/.cache/pypoetry/virtualenvs
+
       - run:
           name: Create a distribution and run tests
           command: |
