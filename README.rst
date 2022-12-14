@@ -13,14 +13,14 @@ It will cache the previews to avoid reprocessing images for each request.
 Develop
 -------
 
-To develop, [install Pipenv](https://github.com/pypa/pipenv#installation) then just run::
+To develop, [install Poetry](https://python-poetry.org/docs/#installation) then just run::
 
-    pipenv install -d
-    pipenv run python setup.py test
+    make install
+    make test
 
 To run the server::
 
-    pipenv run pserve conf/development.ini
+    make run
 
 
 Release
@@ -32,6 +32,10 @@ Mark the version (choose the correct one following [semver](https://semver.org/)
     make minor
     make major
 
+To set a specific version use this command:
+
+    make set_version CURRENT_VERSION=X.Y.Z
+    
 To build the Python package::
 
     make clean dist
