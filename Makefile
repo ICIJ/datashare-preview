@@ -13,7 +13,7 @@ run:
 		poetry run uvicorn dspreview.main:app --reload --host 0.0.0.0 --port 5000
 
 test:
-		poetry run nosetests
+		poetry run pytest
 
 clean:
 		find . -name "*.pyc" -exec rm -rf {} \;
