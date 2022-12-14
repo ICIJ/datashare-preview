@@ -1,4 +1,6 @@
-FROM python:3.8
+FROM python:3.10
+
+RUN pip3 install poetry
 
 RUN apt-get update && apt-get install -y \
       xterm xvfb qpdf \
@@ -17,7 +19,7 @@ RUN gzip -dc Image-ExifTool-12.44.tar.gz | tar -xf - ; \
 ARG DSPREVIEW_VERSION
 WORKDIR /var/www/app
 COPY dist/datashare-preview-$DSPREVIEW_VERSION.tar.gz conf/production.ini ./
-RUN pip install datashare-preview-$DSPREVIEW_VERSION.tar.gz
+RUN poetry install datashare-preview-$DSPREVIEW_VERSION.tar.gz
 
 RUN useradd -ms /bin/bash xterm
 RUN mkdir --mode 777 /var/www/app/cache
