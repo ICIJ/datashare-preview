@@ -57,3 +57,6 @@ docker-push:
 		docker push $(DOCKER_USER)/$(DOCKER_NAME):${CURRENT_VERSION}
 
 docker-publish: docker-build docker-tag docker-push
+
+show-updates:
+	poetry show --latest --outdated

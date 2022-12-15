@@ -12,7 +12,8 @@ It will cache the previews to avoid reprocessing images for each request.
 
 Develop
 -------
-Install system dependencies once and for all:
+Install system dependencies once and for all::
+
     make install_dependencies
     
 To develop, [install Poetry](https://python-poetry.org/docs/#installation) then just run::
