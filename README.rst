@@ -40,7 +40,11 @@ To build the Python package::
 
     make clean dist
 
-
 Then build the docker image and publish it on Docker Hub::
 
     make docker-publish
+
+
+**Note**: Datashare Preview is a multi-platform build. You might need to setup your environment for 
+multi-platform using the `make docker-setup-multiarch` command. Read more 
+[on Docker documentation](https://docs.docker.com/build/building/multi-platform/). 
