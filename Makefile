@@ -24,9 +24,9 @@ test:
 clean:
 		find . -name "*.pyc" -exec rm -rf {} \;
 		rm -rf dist *.egg-info __pycache__ .eggs
+
 dist:
 		poetry build
-
 
 tag_version: 
 		git commit -m "build: bump to ${CURRENT_VERSION}" pyproject.toml
@@ -47,16 +47,14 @@ docker-run:
 		-v $(PWD)/cache/:/var/www/app/cache/ \
 		-v /tmp/.X11-unix:/tmp/.X11-unix $(DOCKER_NAME)
 
-docker-build: dist
-		docker build --build-arg DSPREVIEW_VERSION=$(CURRENT_VERSION) -t $(DOCKER_NAME) .
+docker-setup-multiarch:
+		docker run --privileged --rm multiarch/qemu-user-static --reset -p yes
+		docker buildx create --use
 
-docker-tag:
-		docker tag $(DOCKER_NAME) $(DOCKER_USER)/$(DOCKER_NAME):${CURRENT_VERSION}
-
-docker-push:
-		docker push $(DOCKER_USER)/$(DOCKER_NAME):${CURRENT_VERSION}
-
-docker-publish: docker-build docker-tag docker-push
-
-show-updates:
-	poetry show --latest --outdated
+docker-publish: dist
+		docker buildx build \
+		 	--build-arg DSPREVIEW_VERSION=$(CURRENT_VERSION) \
+			--platform linux/amd64,linux/arm64 \
+			-t $(DOCKER_USER)/$(DOCKER_NAME):${CURRENT_VERSION} \
+			-t $(DOCKER_USER)/$(DOCKER_NAME):latest \
+			--push .
