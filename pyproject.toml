@@ -17,6 +17,7 @@ pygelf = "^0.4.2"
 python = ">=3.8.0,<3.11"
 pytest = "^7.2.0"
 uvicorn = {extras = ["standart"], version = "^0.23.2"}
+anyio = "3.7.1"
 
 [tool.poetry.group.dev.dependencies]
 nose = "^1.3.7"
