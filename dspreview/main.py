@@ -1,4 +1,3 @@
-import logging
 import pkg_resources
 
 from fastapi import FastAPI, HTTPException, Request
@@ -8,10 +7,9 @@ from fastapi_utils.tasks import repeat_every
 
 from dspreview.cache import DocumentCache
 from dspreview.config import settings
-from dspreview.document import Document, DocumentTooBig, DocumentNotPreviewable, DocumentUnauthorized
+from dspreview.document import Document, DocumentTooBig, DocumentRootTooBig, DocumentNotPreviewable, DocumentUnauthorized
 from dspreview.preview import get_size_height
 from dspreview.utils import is_truthy
-from typing import Optional
 
 app = FastAPI()
 
@@ -81,12 +79,11 @@ async def home():
         return 'Datashare preview'
 
 
-
 @app.get("/api/v1/thumbnail/{index}/{id}.json")
 async def info(request: Request):
     try:
         document = get_request_document(request)
-        params = await get_preview_generator_params(request, document)
+        await get_preview_generator_params(request, document)
         pages = document.get_manager_page_nb()
         # Disabled content preview if not requested explicitely
         if request.query_params.get('include-content'):
@@ -100,9 +97,11 @@ async def info(request: Request):
             'previewable': True,
         }
     except DocumentNotPreviewable:
-        return { 'pages': 0, 'previewable': False }
+        return {'pages': 0, 'previewable': False}
     except DocumentTooBig:
         raise HTTPException(status_code=509, detail="Document too big")
+    except DocumentRootTooBig:
+        raise HTTPException(status_code=509, detail="Document root too big")
     except DocumentUnauthorized:
         raise HTTPException(status_code=401)
 
@@ -115,6 +114,8 @@ async def thumbnail(request: Request):
         return FileResponse(document.get_jpeg_preview(params))
     except DocumentTooBig:
         raise HTTPException(status_code=509, detail="Document too big")
+    except DocumentRootTooBig:
+        raise HTTPException(status_code=509, detail="Document root too big")
     except DocumentNotPreviewable:
         raise HTTPException(status_code=403, detail="Document not previewable")
     except DocumentUnauthorized:
