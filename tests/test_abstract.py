@@ -30,3 +30,6 @@ class AbstractTest(unittest.TestCase):
 
     def datashare_url(self, path):
         return urllib.parse.urljoin(settings.ds_host, path)
+    
+    def document_url(self, index, id):
+        return self.datashare_url(f'/api/index/search/{index}/_doc/{id}')
