@@ -9,24 +9,43 @@ from pydantic import BaseSettings
 from typing import Dict, Any
 
 
-def parse_settings_file(conf_file: str, section: str = 'app:main') -> dict:
+def parse_settings_file(conf_file: str, section: str = 'app:main') -> Dict[str, Any]:
+    """
+    Parse a configuration file and return a dictionary of settings.
+
+    Args:
+        conf_file (str): The path to the configuration file.
+        section (str, optional): The section to read from the configuration file. Default is 'app:main'.
+
+    Returns:
+        dict: A dictionary of settings.
+    """
     conf_path = Path(conf_file).resolve()
     config = configparser.ConfigParser()
     config.read(conf_path)
     if section in config:
-        logger.info('Loaded configuration from %s' % conf_path)
+        logger.info(f'Loaded configuration from {conf_path}')
         return config[section]
     return {}
 
 
 def configparser_settings(settings: BaseSettings) -> Dict[str, Any]:
+    """
+    Extract settings from a configuration file and return them as a dictionary.
+
+    Args:
+        settings (BaseSettings): An instance of a Pydantic BaseSettings subclass.
+
+    Returns:
+        dict: A dictionary of settings.
+    """
     conf_file = settings.__config__.conf_file
     conf_section = settings.__config__.conf_section
-    settings = {}
+    settings_dict = {}
     for field, value in parse_settings_file(conf_file, conf_section).items():
         field_snakecase = field.replace(".", "_")
-        settings[field_snakecase] = value
-    return settings
+        settings_dict[field_snakecase] = value
+    return settings_dict
 
 
 class Settings(BaseSettings):
