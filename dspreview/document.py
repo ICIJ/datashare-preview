@@ -1,7 +1,6 @@
 import os
 import httpx
 
-from datetime import datetime
 from pathlib import Path
 from dspreview.content_types import SUPPORTED_CONTENT_TYPES
 from dspreview.cache import THUMBNAILS_PATH, DOCUMENTS_PATH
@@ -11,13 +10,14 @@ from preview_generator.manager import PreviewManager
 from urllib.parse import urljoin
 
 class Document:
-    def __init__(self, index, id, routing):
+    def __init__(self, index, id, routing = None):
         self.index = index
         self.id = id
         self.routing = routing
         self.source = {}
         self.setup_target_directory()
         self.manager = PreviewManager(self.thumbnail_directory, create_folder = True)
+        self.root = Document(index=index, id=self.routing) if self.is_embedded else None
 
 
     @property
@@ -78,7 +78,32 @@ class Document:
     @property
     def thumbnail_directory(self):
         return os.path.join(THUMBNAILS_PATH, self.index, self.id)
+    
 
+    @property
+    def is_embedded(self):
+        return self.routing and self.routing != self.id
+    
+
+    @property
+    def content_type(self):
+        return self.source.get('contentType', None)
+
+
+    @property
+    def content_length(self):
+        return self.source.get('contentLength', 0)
+
+
+    @property
+    def is_content_type_not_previewable(self):
+        return self.content_type not in SUPPORTED_CONTENT_TYPES
+    
+
+    @property
+    def is_too_big(self):
+        return self.content_length > int(settings.ds_document_max_size)
+    
 
     def setup_target_directory(self):
         return os.makedirs(self.target_directory, exist_ok = True)
@@ -112,23 +137,23 @@ class Document:
             raise DocumentUnauthorized()
         # Any other error
         elif response.status_code != httpx.codes.OK:
-            raise DocumentNotPreviewable()
+            raise DocumentNotPreviewable()        
+        data = response.json()
         # Save the source meta
-        self.source = response.json().get('_source', {})
+        self.source = data.get('_source', {})
+        # Download root meta as well
+        if self.is_embedded: await self.root.download_meta(cookies)
 
 
     async def check_user_authorization(self, cookies):
-        # Download meta if none
-        if not self.source: await self.download_meta(cookies)
-        # Read contentType and contentLength from source
-        content_type = self.source.get('contentType', None)
-        content_length = self.source.get('contentLength', 0)
-        # Raise exception if the contentType is not previewable
-        if not self.is_content_type_previewable(content_type):
+        if not self.source: 
+            await self.download_meta(cookies)
+        if self.is_content_type_not_previewable:
             raise DocumentNotPreviewable()
-        # Raise exception if the contentType is not previewable
-        if content_length > int(settings.ds_document_max_size):
+        if self.is_too_big:
             raise DocumentTooBig()
+        if self.is_embedded and self.root.is_too_big:
+            raise DocumentRootTooBig()
 
 
     def get_jpeg_preview(self, params):
@@ -148,14 +173,13 @@ class Document:
         return self.manager.get_page_nb(self.target_path)
 
 
-    def is_content_type_previewable(self, content_type):
-        return content_type in SUPPORTED_CONTENT_TYPES
-
-
 class DocumentUnauthorized(Exception):
     pass
 
 class DocumentNotPreviewable(Exception):
+    pass
+
+class DocumentRootTooBig(Exception):
     pass
 
 class DocumentTooBig(Exception):
