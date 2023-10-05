@@ -29,7 +29,6 @@ RUN sed -i '/disable ghostscript format types/,+6d' /etc/ImageMagick-6/policy.xm
 USER xterm
 
 ENV MAGICK_THREAD_LIMIT 1
-ENV OMP_NUM_THREADS 1
 ENV CACHE_PATH /var/www/app/cache
 ENV DS_CONF_FILE conf/production.ini
 
