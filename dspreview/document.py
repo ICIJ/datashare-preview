@@ -146,11 +146,10 @@ class Document:
         if not self.source:
             await self.download_meta(cookies)
         # Open a stream on the document URL
-        async with httpx.AsyncClient() as client:
-            async with client.stream('GET', self.src_url, cookies=cookies) as response:
-                with open(self.target_path, "wb") as file:
-                    async for chunk in response.aiter_bytes():
-                        file.write(chunk)
+        with httpx.stream('GET', self.src_url, cookies=cookies) as response:
+            with open(self.target_path, "wb") as file:
+                async for chunk in response.iter_bytes():
+                    file.write(chunk)
         return self.target_path
 
 
@@ -168,11 +167,10 @@ class Document:
         if not self.source:
             await self.download_meta(cookies)
         # Open a stream on the document URL
-        async with httpx.AsyncClient() as client:
-            async with client.stream('GET', self.src_url, cookies=cookies) as response:
-                with open(self.target_path, "wb") as file:
-                    async for chunk in response.aiter_bytes():
-                        file.write(chunk)
+        with httpx.stream('GET', self.src_url, cookies=cookies) as response:
+            with open(self.target_path, "wb") as file:
+                for chunk in response.iter_bytes():
+                    file.write(chunk)
         return self.target_path
 
 
@@ -204,8 +202,7 @@ class Document:
             DocumentUnauthorized: If the document request is unauthorized.
             DocumentNotPreviewable: If the document is not previewable.
         """
-        async with httpx.AsyncClient() as client:
-            response = await client.get(self.meta_url, cookies=cookies)
+        response = httpx.get(self.meta_url, cookies=cookies)
         # Raise exception if the document request didn't succeed
         if response.status_code == 401:
             raise DocumentUnauthorized()
