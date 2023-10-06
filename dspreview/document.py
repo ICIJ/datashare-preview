@@ -1,6 +1,7 @@
 import os
 import httpx
 from pathlib import Path
+from shutil import rmtree
 from typing import Optional, Dict, Any
 
 from dspreview.content_types import SUPPORTED_CONTENT_TYPES
@@ -112,8 +113,15 @@ class Document:
 
     @property
     def content_length(self) -> int:
-        return self.source.get('contentLength', 0)
+        return self.source.get('contentLength', -1)
 
+
+    @property
+    def target_content_length(self) -> int:
+        if not self.target_exists:
+            return -1
+        return Path(self.target_path).stat().st_size
+    
 
     @property
     def is_content_type_not_previewable(self) -> bool:
@@ -123,6 +131,16 @@ class Document:
     @property
     def is_too_big(self) -> bool:
         return self.content_length > int(settings.ds_document_max_size)
+    
+
+    @property
+    def is_target_too_big(self) -> bool:
+        return self.target_content_length > int(settings.ds_document_max_size)
+    
+    
+    @property
+    def target_exists(self) -> bool:
+        return Path(self.target_path).exists()
 
 
     def setup_target_directory(self) -> None:
@@ -147,7 +165,7 @@ class Document:
             await self.download_meta(cookies)
         async with httpx.AsyncClient() as client:
             # Open a stream on the document URL
-            with client.stream('GET', self.src_url, cookies=cookies, timeout=None) as response:
+            async with client.stream('GET', self.src_url, cookies=cookies, timeout=None) as response:
                 with open(self.target_path, "wb") as file:
                     async for chunk in response.aiter_bytes():
                         file.write(chunk)
@@ -165,9 +183,16 @@ class Document:
             str: Path to the downloaded document.
         """
         # Ensure the file doesn't exist locally
-        if not Path(self.target_path).exists():
+        if not self.target_exists:
             # Download the document using streaming
             await self.download_document_with_steam(cookies)
+        # Ensure the downloaded file doesn't eceed
+        if self.is_target_too_big:
+            # Delete the target to ensure we don't keep
+            # on disk document that are too big 
+            self.delete_target_dir()
+            # Raise an error, we can't do anything
+            raise DocumentTooBig()
         return self.target_path
 
 
@@ -183,7 +208,7 @@ class Document:
             DocumentNotPreviewable: If the document is not previewable.
         """
         async with httpx.AsyncClient() as client:
-            response = client.get(self.meta_url, cookies=cookies)
+            response = await client.get(self.meta_url, cookies=cookies)
         # Raise exception if the document request didn't succeed
         if response.status_code == 401:
             raise DocumentUnauthorized()
@@ -218,6 +243,13 @@ class Document:
             raise DocumentTooBig()
         if self.is_embedded and self.root.is_too_big:
             raise DocumentRootTooBig()
+
+
+    def delete_target_dir(self) -> None:
+        """
+        Remove the target directory if it exists.
+        """
+        return rmtree(self.target_directory, ignore_errors=True)
 
 
     def get_jpeg_preview(self, params: Dict[str, Any]) -> str:
@@ -255,6 +287,7 @@ class Document:
             int: The number of pages in the document.
         """
         return self.manager.get_page_nb(self.target_path)
+    
 
 
 class DocumentUnauthorized(Exception):
