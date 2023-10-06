@@ -1,9 +1,9 @@
 About
 =====
 
-.. image:: https://circleci.com/gh/ICIJ/datashare-preview.png?style=shield&circle-token=7e42b81871950349431631c84419e83797b9d1c2
-   :alt: Circle CI
-   :target: https://circleci.com/gh/ICIJ/datashare-preview
+.. image:: https://github.com/icij/datashare-preview/actions/workflows/main.yml/badge.svg?branch=master
+   :alt: Github Actions
+   :target: https://github.com/icij/datashare-preview/actions/
 
 This is an application that will take documents hashes/routing information as input
 and serve previews/thumbnails for these documents.
@@ -43,7 +43,7 @@ To build the Python package::
 
     make clean dist
 
-Then build the docker image and publish it on Docker Hub::
+To build the docker image and publish it on Docker Hub::
 
     make docker-publish
 
