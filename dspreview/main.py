@@ -1,8 +1,11 @@
 import pkg_resources
+
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import PlainTextResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_utils.tasks import repeat_every
+from preview_generator.exception import UnsupportedMimeType
+
 from dspreview.cache import DocumentCache
 from dspreview.config import settings
 from dspreview.document import Document, DocumentTooBig, DocumentRootTooBig, DocumentNotPreviewable, DocumentUnauthorized
@@ -145,7 +148,7 @@ async def info(request: Request) -> Union[Dict[str, Any], HTTPException]:
     """
     try:
         document = get_request_document(request)
-        params = await get_preview_generator_params(request, document)
+        await get_preview_generator_params(request, document)
         pages = document.get_manager_page_nb()
         # Disabled content preview if not requested explicitly
         if request.query_params.get('include-content'):
@@ -158,7 +161,8 @@ async def info(request: Request) -> Union[Dict[str, Any], HTTPException]:
             'pages': pages,
             'previewable': True,
         }
-    except DocumentNotPreviewable:
+    except (DocumentNotPreviewable, UnsupportedMimeType):
+        document.delete_target_dir()
         return {'pages': 0, 'previewable': False}
     except DocumentTooBig:
         raise HTTPException(status_code=509, detail="Document too big")
@@ -187,7 +191,8 @@ async def thumbnail(request: Request) -> Union[FileResponse, HTTPException]:
         raise HTTPException(status_code=509, detail="Document too big")
     except DocumentRootTooBig:
         raise HTTPException(status_code=509, detail="Document root too big")
-    except DocumentNotPreviewable:
+    except (DocumentNotPreviewable, UnsupportedMimeType):
+        document.delete_target_dir()
         raise HTTPException(status_code=403, detail="Document not previewable")
     except DocumentUnauthorized:
         raise HTTPException(status_code=401)
