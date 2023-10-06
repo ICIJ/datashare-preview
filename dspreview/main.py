@@ -165,9 +165,9 @@ async def info(request: Request) -> Union[Dict[str, Any], HTTPException]:
         document.delete_target_dir()
         return {'pages': 0, 'previewable': False}
     except DocumentTooBig:
-        raise HTTPException(status_code=509, detail="Document too big")
+        raise HTTPException(status_code=413, detail="Document too big")
     except DocumentRootTooBig:
-        raise HTTPException(status_code=509, detail="Document root too big")
+        raise HTTPException(status_code=413, detail="Document root too big")
     except DocumentUnauthorized:
         raise HTTPException(status_code=401)
 
@@ -188,11 +188,11 @@ async def thumbnail(request: Request) -> Union[FileResponse, HTTPException]:
         params = await get_preview_generator_params(request, document)
         return FileResponse(document.get_jpeg_preview(params))
     except DocumentTooBig:
-        raise HTTPException(status_code=509, detail="Document too big")
+        raise HTTPException(status_code=413, detail="Document too big")
     except DocumentRootTooBig:
-        raise HTTPException(status_code=509, detail="Document root too big")
+        raise HTTPException(status_code=413, detail="Document root too big")
     except (DocumentNotPreviewable, UnsupportedMimeType):
         document.delete_target_dir()
-        raise HTTPException(status_code=403, detail="Document not previewable")
+        raise HTTPException(status_code=415, detail="Document not previewable")
     except DocumentUnauthorized:
         raise HTTPException(status_code=401)
