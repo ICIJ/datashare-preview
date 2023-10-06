@@ -145,32 +145,12 @@ class Document:
         # Download meta if none
         if not self.source:
             await self.download_meta(cookies)
-        # Open a stream on the document URL
-        with httpx.stream('GET', self.src_url, cookies=cookies) as response:
-            with open(self.target_path, "wb") as file:
-                async for chunk in response.iter_bytes():
-                    file.write(chunk)
-        return self.target_path
-
-
-    async def download_document_with_steam(self, cookies: Dict[str, str]) -> str:
-        """
-        Asynchronously downloads the document using a streaming approach.
-
-        Args:
-            cookies (dict): Cookies for the HTTP request.
-
-        Returns:
-            str: Path to the downloaded document.
-        """
-        # Download meta if none
-        if not self.source:
-            await self.download_meta(cookies)
-        # Open a stream on the document URL
-        with httpx.stream('GET', self.src_url, cookies=cookies) as response:
-            with open(self.target_path, "wb") as file:
-                for chunk in response.iter_bytes():
-                    file.write(chunk)
+        async with httpx.AsyncClient() as client:
+            # Open a stream on the document URL
+            with client.stream('GET', self.src_url, cookies=cookies, timeout=None) as response:
+                with open(self.target_path, "wb") as file:
+                    async for chunk in response.aiter_bytes():
+                        file.write(chunk)
         return self.target_path
 
 
@@ -202,7 +182,8 @@ class Document:
             DocumentUnauthorized: If the document request is unauthorized.
             DocumentNotPreviewable: If the document is not previewable.
         """
-        response = httpx.get(self.meta_url, cookies=cookies)
+        async with httpx.AsyncClient() as client:
+            response = client.get(self.meta_url, cookies=cookies)
         # Raise exception if the document request didn't succeed
         if response.status_code == 401:
             raise DocumentUnauthorized()
