@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "datashare-preview"
-version = "1.5.0"
+version = "1.5.1"
 description = ""
 authors = ["ICIJ <engineering@icij.org>"]
 readme = "README.rst"
