@@ -12,3 +12,4 @@ dist
 cache
 .vscode
 .pytest_cache
+.github
