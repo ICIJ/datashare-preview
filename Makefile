@@ -51,7 +51,7 @@ docker-setup-multiarch:
 		docker run --privileged --rm multiarch/qemu-user-static --reset -p yes
 		docker buildx create --use
 
-docker-publish: dist
+docker-publish:
 		docker buildx build \
 			--platform linux/amd64,linux/arm64 \
 			-t $(DOCKER_USER)/$(DOCKER_NAME):${CURRENT_VERSION} \
