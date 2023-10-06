@@ -53,7 +53,6 @@ docker-setup-multiarch:
 
 docker-publish: dist
 		docker buildx build \
-		 	--build-arg DSPREVIEW_VERSION=$(CURRENT_VERSION) \
 			--platform linux/amd64,linux/arm64 \
 			-t $(DOCKER_USER)/$(DOCKER_NAME):${CURRENT_VERSION} \
 			-t $(DOCKER_USER)/$(DOCKER_NAME):latest \
