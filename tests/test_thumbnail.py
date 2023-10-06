@@ -63,7 +63,7 @@ class ThumbnailTest(AbstractTest):
         create_file_ondisk_from_resource('dummy.jpg', '/tmp/documents/my-index/id-for-dummy-jpg/raw.jpg')
 
         response = self.client.get('/api/v1/thumbnail/my-index/id-for-dummy-jpg.json?routing=rooting-id', headers=auth_headers())
-        self.assertEqual(response.status_code, 509)
+        self.assertEqual(response.status_code, 413)
 
     @respx.mock
     def test_wrong_info_json(self):
@@ -87,7 +87,7 @@ class ThumbnailTest(AbstractTest):
         mocked_url = self.document_url('my-index', 'id-wrong-jpg')
         respx.get(mocked_url).mock(return_value=Response(500, json={ "error": None }))
         response = self.client.get('/api/v1/thumbnail/my-index/id-wrong-jpg', headers=auth_headers())
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 415)
 
 
     @respx.mock
@@ -97,4 +97,4 @@ class ThumbnailTest(AbstractTest):
         mocked_download_url = self.datashare_url('/api/my-index/documents/src/id-for-dummy-jpg')
         respx.get(mocked_info_url).mock(return_value=Response(500, json={ "error": None }))
         response = self.client.get('/api/v1/thumbnail/my-index/id-for-dummy-jpg', headers=auth_headers())
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 415)
