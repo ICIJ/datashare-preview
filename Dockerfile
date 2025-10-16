@@ -39,7 +39,7 @@ RUN sed -i '/disable ghostscript format types/,+6d' /etc/ImageMagick-6/policy.xm
 
 USER xterm
 
-ENV CACHE_PATH /var/www/app/cache
-ENV DS_CONF_FILE /var/www/app/conf/production.ini
+ENV CACHE_PATH=/var/www/app/cache
+ENV DS_CONF_FILE=/var/www/app/conf/production.ini
 
 CMD ["uvicorn", "dspreview.main:app", "--proxy-headers", "--host", "0.0.0.0", "--port", "5000"]
