@@ -22,8 +22,7 @@ jobs:
 
     - name: Install system dependencies
       run: |
-        sudo apt update && 
-        sudo apt install -f -qq -y  poppler-utils libfile-mimeinfo-perl libimage-exiftool-perl ghostscript libsecret-1-0 zlib1g-dev libjpeg-dev imagemagick libmagic1 webp gnumeric libreoffice
+        make install_dependencies
    
     - name: Install Poetry
       uses: snok/install-poetry@v1
