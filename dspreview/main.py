@@ -103,7 +103,7 @@ def get_request_document(request: Request) -> Document:
     routing = request.query_params.get('routing', None)
     return Document(index, id, routing)
 
-
+@asynccontextmanager
 async def lifespan(_app: FastAPI):
     await remove_expired_tokens_task()
     yield
