@@ -11,6 +11,7 @@ RUN poetry export -f requirements.txt --output requirements.txt --without-hashes
 FROM python:3.14-bookworm
 
 RUN apt-get update && apt-get install -y \
+  dcraw \
   ffmpeg \
   ghostscript \
   gnumeric \
@@ -51,6 +52,12 @@ RUN mkdir --mode 777 /var/www/app/cache
 # Fix a policy issue with ImageMagick (fixed on Ghostscript 9.24)
 # @see https://stackoverflow.com/questions/52998331/imagemagick-security-policy-pdf-blocking-conversion
 RUN sed -i '/disable ghostscript format types/,+6d' /etc/ImageMagick-6/policy.xml
+
+# fix DNG decoding using dcraw
+# @see https://stackoverflow.com/questions/54036071/imagemagic-gives-delegate-failed-ufraw-batch
+# @see http://www.kevinludlow.com/blog/Configuring_ImageMagick_RAW_Delegates_with_DCRAW_and_UFRAWBatch/1240258/
+RUN sed -i '/<delegate decode="dng:decode"/c\<delegate decode="dng:decode" command="&quot;dcraw&quot; -c &quot;%i&quot; > &quot;%u.ppm&quot;"/>' \
+  /etc/ImageMagick-*/delegates.xml
 
 USER xterm
 
