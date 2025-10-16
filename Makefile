@@ -7,12 +7,29 @@ CURRENT_VERSION ?= `poetry version -s`
 SEMVERS := major minor patch
 
 install_dependencies:
-	sudo apt-get update && \
-		sudo apt-get -y install \
-			poppler-utils libfile-mimeinfo-perl libimage-exiftool-perl \
-			ghostscript libsecret-1-0 zlib1g-dev libjpeg-dev imagemagick libmagic1 webp \
-			gnumeric libreoffice
-install: install_poetry
+	sudo apt-get update && sudo apt-get install -y \
+			dcraw \
+			ffmpeg \
+			ghostscript \
+			gnumeric \
+			imagemagick \
+			inkscape \
+			libfile-mimeinfo-perl \
+			libgomp1 \
+			libimage-exiftool-perl \
+			libjpeg-dev \
+			libmagic1 \
+			libreoffice \
+			libsecret-1-0 \
+			poppler-utils \
+			qpdf \
+			scribus \
+			webp \
+			xterm \
+			xvfb \
+			zlib1g-dev
+	
+install: install_dependencies install_poetry
 
 install_poetry:
 		poetry install --with dev
