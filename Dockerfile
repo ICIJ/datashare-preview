@@ -49,10 +49,6 @@ RUN  pip install --no-cache-dir --upgrade -r /var/www/app/requirements.txt
 RUN useradd -ms /bin/bash xterm
 RUN mkdir --mode 777 /var/www/app/cache
 
-# Fix a policy issue with ImageMagick (fixed on Ghostscript 9.24)
-# @see https://stackoverflow.com/questions/52998331/imagemagick-security-policy-pdf-blocking-conversion
-RUN sed -i '/disable ghostscript format types/,+6d' /etc/ImageMagick-6/policy.xml
-
 # fix DNG decoding using dcraw
 # @see https://stackoverflow.com/questions/54036071/imagemagic-gives-delegate-failed-ufraw-batch
 # @see http://www.kevinludlow.com/blog/Configuring_ImageMagick_RAW_Delegates_with_DCRAW_and_UFRAWBatch/1240258/
