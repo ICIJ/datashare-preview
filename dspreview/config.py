@@ -1,11 +1,9 @@
 import configparser
 import os
-import sys
 
 from fastapi.logger import logger
-from dspreview.cache import DocumentCache
 from pathlib import Path
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 from typing import Dict, Any
 
 
