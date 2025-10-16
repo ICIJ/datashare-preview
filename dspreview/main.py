@@ -1,18 +1,17 @@
-import pkg_resources
-
-from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import PlainTextResponse, FileResponse
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi_utils.tasks import repeat_every
-from preview_generator.exception import UnsupportedMimeType
-
 from contextlib import asynccontextmanager
+from fastapi import FastAPI, HTTPException, Request
+from fastapi_utils.tasks import repeat_every
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import PlainTextResponse, FileResponse
+from importlib.metadata import version
+from preview_generator.exception import UnsupportedMimeType
+from typing import Dict, Any, Union
+
 from dspreview.cache import DocumentCache
 from dspreview.config import settings
 from dspreview.document import Document, DocumentTooBig, DocumentRootTooBig, DocumentNotPreviewable, DocumentUnauthorized
 from dspreview.preview import get_size_height
 from dspreview.utils import is_truthy
-from typing import Dict, Any, Union
 
 
 def has_session_cookie(request: Request) -> bool:
@@ -135,9 +134,8 @@ async def home() -> str:
         str: A string indicating the version of Datashare preview.
     """
     try:
-        v = pkg_resources.get_distribution("datashare_preview").version
-        return 'Datashare preview v%s' % v
-    except pkg_resources.DistributionNotFound:
+        return 'Datashare preview v%s' % version("datashare_preview")
+    except ImportError:
         return 'Datashare preview'
 
 
