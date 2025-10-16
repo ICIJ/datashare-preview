@@ -1,5 +1,6 @@
 import os
 
+from importlib.metadata import version
 from setuptools import setup, find_packages
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -7,7 +8,7 @@ with open(os.path.join(here, 'README.rst')) as f:
     README = f.read()
 
 setup(name='datashare-preview',
-      version='1.1.0',
+      version=version('datashare-preview'),
       description="App to show document previews with a backend Elasticsearch",
       long_description=README,
       classifiers=[
