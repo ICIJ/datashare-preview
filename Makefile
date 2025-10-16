@@ -28,11 +28,11 @@ install_dependencies:
 			xterm \
 			xvfb \
 			zlib1g-dev
-	
-install: install_dependencies install_poetry
 
 install_poetry:
 		poetry install --with dev
+
+install: install_dependencies install_poetry
 
 run:
 		poetry run uvicorn dspreview.main:app --reload --host $(HOST) --port $(PORT)
