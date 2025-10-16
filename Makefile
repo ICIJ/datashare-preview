@@ -1,3 +1,5 @@
+HOST := 0.0.0.0
+PORT := 5000
 DOCKER_USER := icij
 DOCKER_NAME := datashare-preview
 PWD := `pwd`
@@ -16,7 +18,7 @@ install_poetry:
 		poetry install --with dev
 
 run:
-		poetry run uvicorn dspreview.main:app --reload --host 0.0.0.0 --port 5000
+		poetry run uvicorn dspreview.main:app --reload --host $(HOST) --port $(PORT)
 
 test:
 		poetry run pytest
