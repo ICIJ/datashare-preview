@@ -6,22 +6,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi_utils.tasks import repeat_every
 from preview_generator.exception import UnsupportedMimeType
 
+from contextlib import asynccontextmanager
 from dspreview.cache import DocumentCache
 from dspreview.config import settings
 from dspreview.document import Document, DocumentTooBig, DocumentRootTooBig, DocumentNotPreviewable, DocumentUnauthorized
 from dspreview.preview import get_size_height
 from dspreview.utils import is_truthy
 from typing import Dict, Any, Union
-
-app = FastAPI()
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=[settings.ds_session_header_name],
-)
 
 
 def has_session_cookie(request: Request) -> bool:
@@ -113,14 +104,29 @@ def get_request_document(request: Request) -> Document:
     return Document(index, id, routing)
 
 
-@app.on_event("startup")
+async def lifespan(_app: FastAPI):
+    await remove_expired_tokens_task()
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=[settings.ds_session_header_name],
+)
+
+
 @repeat_every(seconds=60 * 10)
 async def remove_expired_tokens_task() -> None:
     max_age = int(settings.ds_document_max_age)
     DocumentCache(max_age).purge()
 
 
-@app.get("/", response_class=PlainTextResponse)
+@app.get("/", response_class=PlainTextResponse, response_model=str)
 async def home() -> str:
     """
     Home endpoint.
@@ -135,7 +141,7 @@ async def home() -> str:
         return 'Datashare preview'
 
 
-@app.get("/api/v1/thumbnail/{index}/{id}.json")
+@app.get("/api/v1/thumbnail/{index}/{id}.json", response_model=None)
 async def info(request: Request) -> Union[Dict[str, Any], HTTPException]:
     """
     Get information about a document.
@@ -172,7 +178,7 @@ async def info(request: Request) -> Union[Dict[str, Any], HTTPException]:
         raise HTTPException(status_code=401)
 
 
-@app.get("/api/v1/thumbnail/{index}/{id}")
+@app.get("/api/v1/thumbnail/{index}/{id}", response_model=None)
 async def thumbnail(request: Request) -> Union[FileResponse, HTTPException]:
     """
     Get a document thumbnail.
