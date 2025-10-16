@@ -17,5 +17,10 @@ SUPPORTED_CONTENT_TYPES = (
   'image/svg+xml',
   'image/tiff',
   'image/webp',
-  'text/csv',
+  'image/wmf',
+  'image/x-adobe-dng',
+  'image/x-canon-cr2',
+  'image/x-canon-crw',
+  'image/x-portable-pixmap',
+  'text/csv'
 )
