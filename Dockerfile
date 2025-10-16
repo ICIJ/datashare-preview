@@ -1,26 +1,41 @@
-FROM python:3.11-bullseye as requirements
+FROM python:3.14-bookworm AS requirements
 
 WORKDIR /tmp
 
-RUN pip install poetry
+RUN pip install poetry==1.3
 COPY ./pyproject.toml ./poetry.lock* /tmp/
 
 RUN poetry export -f requirements.txt --output requirements.txt --without-hashes
 
 
-FROM python:3.11-bullseye
+FROM python:3.14-bookworm
 
 RUN apt-get update && apt-get install -y \
-      xterm xvfb qpdf \
-      poppler-utils libfile-mimeinfo-perl libimage-exiftool-perl \
-      ghostscript zlib1g-dev libjpeg-dev imagemagick libmagic1 webp \
-      scribus libreoffice gnumeric inkscape libgomp1
+  ffmpeg \
+  ghostscript \
+  gnumeric \
+  imagemagick \
+  inkscape \
+  libfile-mimeinfo-perl \
+  libgomp1 \
+  libimage-exiftool-perl \
+  libjpeg-dev \
+  libmagic1 \
+  libreoffice \
+  libsecret-1-0 \
+  poppler-utils \
+  qpdf \
+  scribus \
+  webp \
+  xterm \
+  xvfb \
+  zlib1g-dev
 
 WORKDIR /tmp
-ADD https://exiftool.org/Image-ExifTool-12.52.tar.gz .
+ADD https://exiftool.org/Image-ExifTool-13.39.tar.gz .
 
-RUN gzip -dc Image-ExifTool-12.52.tar.gz | tar -xf - ; \
-  cd Image-ExifTool-12.52 ; \
+RUN gzip -dc Image-ExifTool-13.39.tar.gz | tar -xf - ; \
+  cd Image-ExifTool-13.39 ; \
   perl Makefile.PL ; \
   make install
 
