@@ -210,7 +210,7 @@ class Document:
             DocumentUnauthorized: If the document request is unauthorized.
             DocumentNotPreviewable: If the document is not previewable.
         """
-        async with httpx.AsyncClient(cookaies=cookies, timeout=None) as client:
+        async with httpx.AsyncClient(cookies=cookies, timeout=None) as client:
             response = await client.get(self.meta_url)
             # Raise exception if the document request didn't succeed
             if response.status_code >= 400 and response.status_code < 500:
