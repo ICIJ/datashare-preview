@@ -1,69 +1,108 @@
-import configparser
 import os
+import configparser
 
-from fastapi.logger import logger
 from pathlib import Path
-from pydantic_settings import BaseSettings
-from typing import Dict, Any
+from typing import Any, Dict, Tuple
+from pydantic.fields import FieldInfo
+from pydantic_settings import BaseSettings, SettingsConfigDict, PydanticBaseSettingsSource
 
 
-def parse_settings_file(conf_file: str, section: str = 'app:main') -> Dict[str, Any]:
+class ConfigParserSettingsSource(PydanticBaseSettingsSource):
     """
-    Parse a configuration file and return a dictionary of settings.
-
-    Args:
-        conf_file (str): The path to the configuration file.
-        section (str, optional): The section to read from the configuration file. Default is 'app:main'.
-
-    Returns:
-        dict: A dictionary of settings.
+    Custom settings source that loads configuration values from an INI file.
     """
-    conf_path = Path(conf_file).resolve()
-    config = configparser.ConfigParser()
-    config.read(conf_path)
-    if section in config:
-        logger.info(f'Loaded configuration from {conf_path}')
-        return config[section]
-    return {}
 
+    def __init__(self, settings_cls: type[BaseSettings], ini_file: Path, section: str = "app:main"):
+        super().__init__(settings_cls)
+        self.ini_file = ini_file
+        self.section = section
+        self._data = self._load_ini()
 
-def configparser_settings(settings: BaseSettings) -> Dict[str, Any]:
-    """
-    Extract settings from a configuration file and return them as a dictionary.
+    def _load_ini(self) -> Dict[str, Any]:
+        """Parse the INI file and return key/value pairs."""
+        if not self.ini_file.exists():
+            return {}
 
-    Args:
-        settings (BaseSettings): An instance of a Pydantic BaseSettings subclass.
+        parser = configparser.ConfigParser()
+        parser.read(self.ini_file)
 
-    Returns:
-        dict: A dictionary of settings.
-    """
-    conf_file = settings.__config__.conf_file
-    conf_section = settings.__config__.conf_section
-    settings_dict = {}
-    for field, value in parse_settings_file(conf_file, conf_section).items():
-        field_snakecase = field.replace(".", "_")
-        settings_dict[field_snakecase] = value
-    return settings_dict
+        if self.section not in parser:
+            return {}
+
+        data: Dict[str, Any] = {}
+        for key, value in parser[self.section].items():
+            data[key.replace(".", "_")] = value
+        return data
+
+    # Required by Pydantic v2
+    def get_field_value(self, field_name: str, field: FieldInfo) -> Tuple[Any, str | None]:
+        """
+        Return a tuple (value, source) for a specific field.
+        """
+        if field_name in self._data:
+            return self._data[field_name], self.ini_file.as_posix()
+        return None, None
+
+    # Optional convenience: used when returning all values at once
+    def __call__(self) -> Dict[str, Any]:
+        return self._data
 
 
 class Settings(BaseSettings):
+    """
+    Application settings loaded from:
+      1. init arguments
+      2. environment variables (.env)
+      3. a single INI file defined by DS_CONF_FILE
+      4. defaults here
+    """
+
     ds_host: str = "http://localhost:8080"
     ds_document_meta_path: str = "/api/index/search/%s/_doc/%s"
     ds_document_src_path: str = "/api/%s/documents/src/%s"
-    ds_document_max_size: int = 50000000
-    ds_document_max_age: int = 259200
-    ds_session_cookie_enabled: str = "true"
+    ds_document_max_size: int = 50_000_000
+    ds_document_max_age: int = 259_200
+    ds_session_cookie_enabled: bool = True
     ds_session_cookie_name: str = "_ds_session_id"
     ds_session_header_enabled: bool = True
     ds_session_header_name: str = "X-Ds-Session-Id"
 
-    class Config:
-        conf_file = os.environ.get('DS_CONF_FILE', 'conf/development.ini')
-        conf_section = os.environ.get('DS_CONF_SECTION', 'app:main')
+    model_config = SettingsConfigDict(
+        env_prefix="DS_",
+        env_nested_delimiter="__",
+        env_file=".env",
+        extra="ignore",
+        conf_file=os.environ.get("DS_CONF_FILE", "conf/development.ini"),
+        conf_section=os.environ.get("DS_CONF_SECTION", "app:main"),
+    )
 
-        @classmethod
-        def customise_sources(cls, init_settings, env_settings, file_secret_settings):
-            return (init_settings, env_settings, configparser_settings, file_secret_settings,)
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls,
+        init_settings,
+        env_settings,
+        dotenv_settings,
+        file_secret_settings,
+    ):
+        """
+        Load order:
+          1. init args
+          2. env / .env
+          3. INI file (if present)
+          4. file secrets
+        """
+        conf_file = os.environ.get("DS_CONF_FILE", cls.model_config.get("conf_file"))
+        conf_section = os.environ.get("DS_CONF_SECTION", cls.model_config.get("conf_section"))
 
+        sources = [init_settings, env_settings, dotenv_settings]
+
+        if conf_file:
+            path = Path(conf_file)
+            if path.exists():
+                sources.append(ConfigParserSettingsSource(settings_cls, ini_file=path, section=conf_section))
+
+        sources.append(file_secret_settings)
+        return tuple(sources)
 
 settings = Settings()
