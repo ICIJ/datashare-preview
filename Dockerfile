@@ -42,9 +42,10 @@ RUN gzip -dc Image-ExifTool-13.39.tar.gz | tar -xf - ; \
 
 WORKDIR /var/www/app
 
-COPY . .
 COPY --from=requirements /tmp/requirements.txt .
 RUN  pip install --no-cache-dir --upgrade -r /var/www/app/requirements.txt
+
+COPY . .
 
 RUN useradd -ms /bin/bash xterm
 RUN mkdir --mode 777 /var/www/app/cache
@@ -59,5 +60,7 @@ USER xterm
 
 ENV CACHE_PATH=/var/www/app/cache
 ENV DS_CONF_FILE=/var/www/app/conf/production.ini
+ENV HOST=0.0.0.0
+ENV PORT=5000
 
-CMD ["uvicorn", "dspreview.main:app", "--proxy-headers", "--host", "0.0.0.0", "--port", "5000"]
+CMD ["sh", "-c", "uvicorn dspreview.main:app --proxy-headers --host $HOST --port $PORT"]
