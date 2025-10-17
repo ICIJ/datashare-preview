@@ -12,4 +12,7 @@ dist
 cache
 .vscode
 .pytest_cache
+.git
 .github
+.dockerignore
+Dockerfile
