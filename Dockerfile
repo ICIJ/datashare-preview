@@ -1,4 +1,4 @@
-FROM python:3.14-bookworm AS requirements
+FROM python:3.13-bookworm AS requirements
 
 WORKDIR /tmp
 
@@ -8,7 +8,7 @@ COPY ./pyproject.toml ./poetry.lock* /tmp/
 RUN poetry export -f requirements.txt --output requirements.txt --without-hashes
 
 
-FROM python:3.14-bookworm
+FROM python:3.13-bookworm
 
 RUN apt-get update && apt-get install -y \
   dcraw \
