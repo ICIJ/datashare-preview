@@ -163,8 +163,8 @@ class Document:
         # Download meta if none
         if not self.source:
             await self.download_meta(cookies)
-        async with httpx.AsyncClient() as client:
-            response = await client.get(self.src_url, cookies=cookies, timeout=None)
+        async with httpx.AsyncClient(cookies=cookies, timeout=None) as client:
+            response = await client.get(self.src_url)
             if response.status_code == httpx.codes.OK:
                 with open(self.target_path, "wb") as file:
                     file.write(response.content)
@@ -210,20 +210,20 @@ class Document:
             DocumentUnauthorized: If the document request is unauthorized.
             DocumentNotPreviewable: If the document is not previewable.
         """
-        async with httpx.AsyncClient() as client:
-            response = await client.get(self.meta_url, cookies=cookies)
-        # Raise exception if the document request didn't succeed
-        if response.status_code >= 400 and response.status_code < 500:
-            raise DocumentUnauthorized()
-        # Any other error
-        elif response.status_code != httpx.codes.OK:
-            raise DocumentNotPreviewable()
-        data = response.json()
-        # Save the source meta
-        self.source = data.get('_source', {})
-        # Download root meta as well if embedded
-        if self.is_embedded:
-            await self.root.download_meta(cookies)
+        async with httpx.AsyncClient(cookaies=cookies, timeout=None) as client:
+            response = await client.get(self.meta_url)
+            # Raise exception if the document request didn't succeed
+            if response.status_code >= 400 and response.status_code < 500:
+                raise DocumentUnauthorized()
+            # Any other error
+            elif response.status_code != httpx.codes.OK:
+                raise DocumentNotPreviewable()
+            data = response.json()
+            # Save the source meta
+            self.source = data.get('_source', {})
+            # Download root meta as well if embedded
+            if self.is_embedded:
+                await self.root.download_meta(cookies)
 
 
     async def check_user_authorization(self, cookies: Dict[str, str]) -> None:
