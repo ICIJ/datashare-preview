@@ -1,4 +1,5 @@
 SIZES = dict(xs=80, sm=310, md=540, lg=720, xl=960)
+MAX_HEIGHT = SIZES['xl']
 
 
 def get_size_height(size: str) -> int:
@@ -12,6 +13,6 @@ def get_size_height(size: str) -> int:
         int: The height value associated with the size.
     """
     if str(size).isnumeric():
-        return int(size)
+        return min(int(size), MAX_HEIGHT)
     else:
         return SIZES.get(size, SIZES.get('xs'))

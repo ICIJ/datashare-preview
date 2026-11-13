@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi_utils.tasks import repeat_every
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse, FileResponse
@@ -65,19 +65,19 @@ def get_cookies_from_forwarded_headers(request: Request) -> Dict[str, str]:
     return request.cookies
 
 
-async def get_preview_generator_params(request: Request, document: Document) -> Dict[str, Any]:
+async def get_preview_generator_params(request: Request, document: Document, page: int) -> Dict[str, Any]:
     """
     Get parameters for the preview generator.
 
     Args:
         request (Request): The incoming request.
         document (Document): The document to generate a preview for.
+        page (int): The page to generate a preview for.
 
     Returns:
         Dict[str, Any]: A dictionary of parameters for the preview generator.
     """
     size = request.query_params.get('size', 'xs')
-    page = int(request.query_params.get('page', 0))
     height = get_size_height(size)
     cookies = get_cookies_from_forwarded_headers(request)
     await document.download_meta(cookies)
@@ -141,7 +141,7 @@ async def home() -> str:
 
 
 @app.get("/api/v1/thumbnail/{index}/{id}.json", response_model=None)
-async def info(request: Request) -> Union[Dict[str, Any], HTTPException]:
+async def info(request: Request, page: int = Query(0, ge=0)) -> Union[Dict[str, Any], HTTPException]:
     """
     Get information about a document.
 
@@ -153,7 +153,7 @@ async def info(request: Request) -> Union[Dict[str, Any], HTTPException]:
     """
     try:
         document = get_request_document(request)
-        await get_preview_generator_params(request, document)
+        await get_preview_generator_params(request, document, page)
         pages = await run_in_threadpool(document.get_manager_page_nb)
         # Disabled content preview if not requested explicitly
         if request.query_params.get('include-content'):
@@ -180,7 +180,7 @@ async def info(request: Request) -> Union[Dict[str, Any], HTTPException]:
 
 
 @app.get("/api/v1/thumbnail/{index}/{id}", response_model=None)
-async def thumbnail(request: Request) -> Union[FileResponse, HTTPException]:
+async def thumbnail(request: Request, page: int = Query(0, ge=0)) -> Union[FileResponse, HTTPException]:
     """
     Get a document thumbnail.
 
@@ -192,7 +192,7 @@ async def thumbnail(request: Request) -> Union[FileResponse, HTTPException]:
     """
     try:
         document = get_request_document(request)
-        params = await get_preview_generator_params(request, document)
+        params = await get_preview_generator_params(request, document, page)
         preview_path = await run_in_threadpool(document.get_jpeg_preview, params)
         return FileResponse(preview_path)
     except DocumentTooBig:

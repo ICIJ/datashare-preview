@@ -124,6 +124,10 @@ class ThumbnailTest(AbstractTest):
         response = self.client.get('/api/v1/thumbnail/my-index/%2E%2E', headers=auth_headers())
         self.assertEqual(response.status_code, 400)
 
+    def test_thumbnail_rejects_page_that_is_not_a_number(self):
+        response = self.client.get('/api/v1/thumbnail/my-index/some-id?page=abc', headers=auth_headers())
+        self.assertEqual(response.status_code, 422)
+
     @respx.mock
     def test_thumbnail_downloads_the_document(self):
         mocked_info_url = self.document_url('my-index', 'id-to-download')
