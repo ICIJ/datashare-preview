@@ -3,6 +3,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi_utils.tasks import repeat_every
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse, FileResponse
+from fastapi.concurrency import run_in_threadpool
 from importlib.metadata import version
 from preview_generator.exception import UnsupportedMimeType
 from typing import Dict, Any, Union
@@ -153,10 +154,10 @@ async def info(request: Request) -> Union[Dict[str, Any], HTTPException]:
     try:
         document = get_request_document(request)
         await get_preview_generator_params(request, document)
-        pages = document.get_manager_page_nb()
+        pages = await run_in_threadpool(document.get_manager_page_nb)
         # Disabled content preview if not requested explicitly
         if request.query_params.get('include-content'):
-            content = document.get_json_preview()
+            content = await run_in_threadpool(document.get_json_preview)
         else:
             content = None
         return {
@@ -192,7 +193,8 @@ async def thumbnail(request: Request) -> Union[FileResponse, HTTPException]:
     try:
         document = get_request_document(request)
         params = await get_preview_generator_params(request, document)
-        return FileResponse(document.get_jpeg_preview(params))
+        preview_path = await run_in_threadpool(document.get_jpeg_preview, params)
+        return FileResponse(preview_path)
     except DocumentTooBig:
         raise HTTPException(status_code=413, detail="Document too big")
     except DocumentRootTooBig:
