@@ -11,12 +11,20 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from shutil import copyfile
 
 
+def resource_path(resource_name):
+    current_directory = os.path.dirname(os.path.realpath(__file__))
+    return os.path.join(current_directory, 'resources', resource_name)
+
+
+def read_resource(resource_name):
+    with open(resource_path(resource_name), 'rb') as resource_file:
+        return resource_file.read()
+
+
 def create_file_ondisk_from_resource(resource_name, path):
     target_directory = os.path.dirname(path)
-    current_directory = os.path.dirname(os.path.realpath(__file__))
-    resource_path = os.path.join(current_directory, 'resources', resource_name)
     os.makedirs(target_directory, exist_ok = True)
-    copyfile(resource_path, path)
+    copyfile(resource_path(resource_name), path)
 
 
 def auth_headers():

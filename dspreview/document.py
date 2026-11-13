@@ -2,6 +2,7 @@ import os
 import httpx
 from pathlib import Path
 from shutil import rmtree
+from tempfile import mkstemp
 from typing import Optional, Dict, Any
 
 from dspreview.content_types import SUPPORTED_CONTENT_TYPES
@@ -10,6 +11,8 @@ from dspreview.config import settings
 from dspreview.spreadsheet import is_content_type_spreadsheet, get_spreadsheet_preview
 from preview_generator.manager import PreviewManager
 from urllib.parse import quote, urljoin
+
+REQUEST_TIMEOUT_SECONDS = 30
 
 
 class Document:
@@ -149,7 +152,7 @@ class Document:
         return os.makedirs(self.target_directory, exist_ok=True)
 
 
-    async def download_document_with_steam(self, cookies: Dict[str, str]) -> str:
+    async def download_document_with_stream(self, cookies: Dict[str, str]) -> str:
         """
         Asynchronously downloads the document using a streaming approach.
 
@@ -162,16 +165,38 @@ class Document:
         # Download meta if none
         if not self.source:
             await self.download_meta(cookies)
-        async with httpx.AsyncClient(cookies=cookies, timeout=None) as client:
-            response = await client.get(self.src_url)
-            if response.status_code == httpx.codes.OK:
-                with open(self.target_path, "wb") as file:
-                    file.write(response.content)
-            elif 400 <= response.status_code < 500:
-                raise DocumentUnauthorized()
-            else:
-                raise DocumentNotPreviewable()
+        async with httpx.AsyncClient(cookies=cookies, timeout=REQUEST_TIMEOUT_SECONDS) as client:
+            async with client.stream('GET', self.src_url) as response:
+                if 400 <= response.status_code < 500:
+                    raise DocumentUnauthorized()
+                if response.status_code != httpx.codes.OK:
+                    raise DocumentNotPreviewable()
+                await self.write_response_to_target(response)
         return self.target_path
+
+
+    async def write_response_to_target(self, response: httpx.Response) -> None:
+        """
+        Write the response body to the target path, chunk by chunk.
+
+        The body goes to a temporary file first so a concurrent request never
+        previews a partially written document, and two concurrent downloads
+        never write into the same file. The download stops as soon as it
+        exceeds the max size, because Datashare may not report a content length.
+        """
+        max_size = int(settings.ds_document_max_size)
+        partial_descriptor, partial_path = mkstemp(dir=self.target_directory, suffix='.partial')
+        written_size = 0
+        try:
+            with os.fdopen(partial_descriptor, 'wb') as file:
+                async for chunk in response.aiter_bytes():
+                    written_size += len(chunk)
+                    if written_size > max_size:
+                        raise DocumentTooBig()
+                    file.write(chunk)
+            os.replace(partial_path, self.target_path)
+        finally:
+            Path(partial_path).unlink(missing_ok=True)
 
 
     async def download_document(self, cookies: Dict[str, str]) -> str:
@@ -187,7 +212,7 @@ class Document:
         # Ensure the file doesn't exist locally
         if not self.target_exists:
             # Download the document using streaming
-            await self.download_document_with_steam(cookies)
+            await self.download_document_with_stream(cookies)
         # Ensure the downloaded file doesn't eceed
         if self.is_target_too_big:
             # Delete the target to ensure we don't keep
@@ -209,7 +234,7 @@ class Document:
             DocumentUnauthorized: If the document request is unauthorized.
             DocumentNotPreviewable: If the document is not previewable.
         """
-        async with httpx.AsyncClient(cookies=cookies, timeout=None) as client:
+        async with httpx.AsyncClient(cookies=cookies, timeout=REQUEST_TIMEOUT_SECONDS) as client:
             response = await client.get(self.meta_url)
             # Raise exception if the document request didn't succeed
             if response.status_code >= 400 and response.status_code < 500:

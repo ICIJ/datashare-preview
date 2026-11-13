@@ -1,8 +1,12 @@
 import os
 import respx
 
+from shutil import rmtree
+from unittest.mock import patch
+
 from httpx import Response
-from .test_abstract import auth_headers, create_file_ondisk_from_resource
+from dspreview.config import settings
+from .test_abstract import auth_headers, create_file_ondisk_from_resource, read_resource
 from .test_abstract import AbstractTest
 
 class ThumbnailTest(AbstractTest):
@@ -119,3 +123,29 @@ class ThumbnailTest(AbstractTest):
     def test_thumbnail_rejects_parent_directory_id(self):
         response = self.client.get('/api/v1/thumbnail/my-index/%2E%2E', headers=auth_headers())
         self.assertEqual(response.status_code, 400)
+
+    @respx.mock
+    def test_thumbnail_downloads_the_document(self):
+        mocked_info_url = self.document_url('my-index', 'id-to-download')
+        respx.get(mocked_info_url).mock(return_value=Response(200, json={'_source': self._source}))
+        mocked_download_url = self.datashare_url('/api/my-index/documents/src/id-to-download')
+        dummy_jpg_content = read_resource('dummy.jpg')
+        respx.get(mocked_download_url).mock(return_value=Response(200, content=dummy_jpg_content))
+        rmtree('/tmp/documents/my-index/id-to-download', ignore_errors=True)
+
+        response = self.client.get('/api/v1/thumbnail/my-index/id-to-download', headers=auth_headers())
+        self.assertEqual(response.status_code, 200)
+
+    @respx.mock
+    def test_thumbnail_rejects_too_big_download_without_content_length(self):
+        source_without_length = {'contentType': 'image/jpeg', 'path': 'dummy.jpg'}
+        mocked_info_url = self.document_url('my-index', 'id-too-big')
+        respx.get(mocked_info_url).mock(return_value=Response(200, json={'_source': source_without_length}))
+        mocked_download_url = self.datashare_url('/api/my-index/documents/src/id-too-big')
+        respx.get(mocked_download_url).mock(return_value=Response(200, content=b'x' * 100))
+        rmtree('/tmp/documents/my-index/id-too-big', ignore_errors=True)
+
+        with patch.object(settings, 'ds_document_max_size', 10):
+            response = self.client.get('/api/v1/thumbnail/my-index/id-too-big', headers=auth_headers())
+        self.assertEqual(response.status_code, 413)
+        self.assertFalse(os.path.exists('/tmp/documents/my-index/id-too-big/raw.jpg'))
