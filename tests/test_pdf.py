@@ -114,3 +114,19 @@ class PdfTest(AbstractTest):
         self.create_truncated_odt('id-corrupt-odt-pdf')
         response = self.client.get('/api/v1/pdf/my-index/id-corrupt-odt-pdf', headers=auth_headers())
         self.assertEqual(response.status_code, 415)
+
+    @respx.mock
+    def test_thumbnail_for_corrupt_odt(self):
+        respx.get(self.document_url('my-index', 'id-corrupt-odt-thumbnail')).mock(return_value=Response(200, json={'_source': self._source}))
+        self.create_truncated_odt('id-corrupt-odt-thumbnail')
+        response = self.client.get('/api/v1/thumbnail/my-index/id-corrupt-odt-thumbnail', headers=auth_headers())
+        self.assertEqual(response.status_code, 415)
+
+    @respx.mock
+    def test_thumbnail_timeout(self):
+        respx.get(self.document_url('my-index', 'id-odt-thumbnail-timeout')).mock(return_value=Response(200, json={'_source': self._source}))
+        create_file_ondisk_from_resource('dummy.odt', '/tmp/documents/my-index/id-odt-thumbnail-timeout/raw.odt')
+        with patch.object(Document, 'get_jpeg_preview', side_effect=TimeoutExpired('soffice', 60)):
+            response = self.client.get('/api/v1/thumbnail/my-index/id-odt-thumbnail-timeout', headers=auth_headers())
+        self.assertEqual(response.status_code, 415)
+        self.assertFalse(os.path.exists('/tmp/documents/my-index/id-odt-thumbnail-timeout'))

@@ -201,7 +201,7 @@ async def thumbnail(request: Request, page: int = Query(0, ge=0)) -> Union[FileR
         raise HTTPException(status_code=413, detail="Document too big")
     except DocumentRootTooBig:
         raise HTTPException(status_code=413, detail="Document root too big")
-    except (DocumentNotPreviewable, UnsupportedMimeType):
+    except (DocumentNotPreviewable, UnsupportedMimeType, TimeoutExpired, FileNotFoundError):
         document.delete_target_dir()
         raise HTTPException(status_code=415, detail="Document not previewable")
     except DocumentUnauthorized:
