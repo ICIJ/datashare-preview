@@ -7,7 +7,7 @@ from .test_abstract import AbstractTest
 class PreflightTest(AbstractTest):
 
     def assert_cors_headers_ok(self, response):
-        self.assertEqual('*', response.headers.get('access-control-allow-origin'))
+        self.assertEqual('http://localhost', response.headers.get('access-control-allow-origin'))
         self.assertEqual('true', response.headers.get('access-control-allow-credentials'))
 
     def test_cors_thumbnail_preflight(self):
