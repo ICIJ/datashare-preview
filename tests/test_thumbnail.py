@@ -98,3 +98,14 @@ class ThumbnailTest(AbstractTest):
         respx.get(mocked_info_url).mock(return_value=Response(500, json={ "error": None }))
         response = self.client.get('/api/v1/thumbnail/my-index/id-for-dummy-jpg', headers=auth_headers())
         self.assertEqual(response.status_code, 415)
+
+    @respx.mock
+    def test_info_json_for_path_without_extension(self):
+        source_without_extension = {**self._source, 'path': 'dummy'}
+        mocked_url = self.document_url('my-index', 'id-for-dummy-without-extension')
+        respx.get(mocked_url).mock(return_value=Response(200, json={'_source': source_without_extension}))
+        create_file_ondisk_from_resource('dummy.jpg', '/tmp/documents/my-index/id-for-dummy-without-extension/raw.jpg')
+
+        response = self.client.get('/api/v1/thumbnail/my-index/id-for-dummy-without-extension.json', headers=auth_headers())
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json().get('previewable'))

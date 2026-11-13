@@ -77,7 +77,7 @@ class Document:
         if self.target_path_ext == '':
             if self.target_content_type is None:
                 return ''
-            return self.manager.get_file_extension()
+            return self.manager.get_file_extension(self.target_content_type)
         return self.target_path_ext
 
 
