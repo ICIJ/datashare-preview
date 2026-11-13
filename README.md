@@ -47,27 +47,21 @@ What decides the version is the commit subject, which follows [Conventional Comm
 | `feat!: ...`, or any commit with a `BREAKING CHANGE:` footer | major |
 | `build:`, `chore:`, `ci:`, `docs:`, `refactor:`, `style:`, `test:` | none |
 
-Follow the run on the [Actions tab](https://github.com/ICIJ/datashare-preview/actions/workflows/release.yml). When no commit calls for a release, the workflow succeeds and publishes nothing. You can also start it by hand from that page ("Run workflow"), which always releases from `main`.
+Follow the run on the [Actions tab](https://github.com/ICIJ/datashare-preview/actions/workflows/release.yml). When no commit calls for a release, the workflow succeeds and publishes nothing. To retry a failed release, open that run and click "Re-run failed jobs": it releases the same tested commit again.
+
+If `main` received new commits while a release was running, that release is rejected on push and the next green CI run on `main` releases everything at once.
 
 ### Manual fallback
 
-If the workflow is unavailable, you can publish from your machine. This requires being a member of the ICIJ organization on Docker Hub.
+If the workflow is unavailable, you can run the same release from your machine. This requires a GitHub token with write access to the repository and being a member of the ICIJ organization on Docker Hub.
 
-Bump the version and tag it (pick one, following [semver](https://semver.org/)):
-
-```
-make patch
-make minor
-make major
-```
-
-To set a specific version use this command:
+From an up-to-date `main` whose CI passed, bump the version, update the changelog, push the commit and tag, and create the GitHub release:
 
 ```
-make set_version CURRENT_VERSION=X.Y.Z
+GH_TOKEN=<token> uvx --from python-semantic-release==10.7.0 semantic-release version
 ```
 
-Build the Docker image and publish it on Docker Hub:
+Then build the Docker image for that version and publish it on Docker Hub:
 
 ```
 make docker-publish

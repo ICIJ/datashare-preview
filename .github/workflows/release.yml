@@ -5,7 +5,6 @@ on:
     workflows: [datashare-preview - CI]
     types: [completed]
     branches: [main]
-  workflow_dispatch:
 
 concurrency:
   group: release
@@ -14,9 +13,7 @@ concurrency:
 jobs:
   release:
     name: Bump version and tag
-    if: >-
-      github.repository == 'ICIJ/datashare-preview' &&
-      (github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success')
+    if: github.repository == 'ICIJ/datashare-preview' && github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -30,18 +27,14 @@ jobs:
           ref: main
           fetch-depth: 0
 
-      - uses: actions/setup-python@v7
-        with:
-          python-version: '3.12'
-
-      - name: Install Python Semantic Release
-        run: pip install 'python-semantic-release==10.6.2'
+      - name: Move main to the commit CI tested
+        run: git reset --hard ${{ github.event.workflow_run.head_sha }}
 
       - name: Python Semantic Release
         id: release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: semantic-release -v version
+        uses: python-semantic-release/python-semantic-release@v10.7.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
   docker:
     name: Publish to Docker Hub
