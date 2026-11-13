@@ -1,3 +1,15 @@
+PDF_CONTENT_TYPES = (
+  'application/msword',
+  'application/vnd.ms-powerpoint',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  'application/vnd.ms-powerpoint.presentation.macroEnabled.12',
+  'application/vnd.openxmlformats-officedocument.presentationml.slideshow',
+  'application/vnd.oasis.opendocument.text',
+  'application/vnd.oasis.opendocument.presentation',
+  'application/rtf',
+  'text/rtf'
+)
+
 SUPPORTED_CONTENT_TYPES = (
   'application/msword',
   'application/pdf',
@@ -5,11 +17,13 @@ SUPPORTED_CONTENT_TYPES = (
   'application/vnd.ms-excel',
   'application/vnd.ms-excel.sheet.macroenabled.12',
   'application/vnd.ms-powerpoint',
+  'application/vnd.ms-powerpoint.presentation.macroEnabled.12',
   'application/vnd.oasis.opendocument.presentation',
   'application/vnd.oasis.opendocument.spreadsheet',
   'application/vnd.oasis.opendocument.spreadsheet-template',
   'application/vnd.oasis.opendocument.text',
   'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  'application/vnd.openxmlformats-officedocument.presentationml.slideshow',
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   'application/vnd.openxmlformats-officedocument.spreadsheetml.template',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -38,4 +52,5 @@ SUPPORTED_CONTENT_TYPES = (
   'image/x-portable-pixmap',
   'image/x-xbitmap',
   'text/csv',
+  'text/rtf',
 )
