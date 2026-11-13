@@ -168,7 +168,7 @@ async def info(request: Request, page: int = Query(0, ge=0)) -> Union[Dict[str, 
             'pages': pages,
             'previewable': True,
         }
-    except (DocumentNotPreviewable, UnsupportedMimeType, TimeoutExpired):
+    except (DocumentNotPreviewable, UnsupportedMimeType, TimeoutExpired, FileNotFoundError):
         document.delete_target_dir()
         return {'pages': 0, 'previewable': False}
     except DocumentTooBig:
@@ -235,7 +235,7 @@ async def pdf(request: Request) -> Union[FileResponse, HTTPException]:
         raise HTTPException(status_code=413, detail="Document too big")
     except DocumentRootTooBig:
         raise HTTPException(status_code=413, detail="Document root too big")
-    except (DocumentNotPreviewable, UnsupportedMimeType, TimeoutExpired):
+    except (DocumentNotPreviewable, UnsupportedMimeType, TimeoutExpired, FileNotFoundError):
         document.delete_target_dir()
         raise HTTPException(status_code=415, detail="Document not previewable")
     except DocumentUnauthorized:

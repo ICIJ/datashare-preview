@@ -34,6 +34,14 @@ class PdfTest(AbstractTest):
         respx.get(src_url, cookies=cookies).mock(return_value=Response(200, content=read_resource('dummy.odt')))
         rmtree(f'/tmp/documents/my-index/{id}', ignore_errors=True)
 
+    def create_truncated_odt(self, id):
+        target_directory = f'/tmp/documents/my-index/{id}'
+        rmtree(target_directory, ignore_errors=True)
+        os.makedirs(target_directory)
+        truncated_odt = read_resource('dummy.odt')[:3000]
+        with open(f'{target_directory}/raw.odt', 'wb') as file:
+            file.write(truncated_odt)
+
     @respx.mock
     def test_info_json_for_odt(self):
         respx.get(self.document_url('my-index', 'id-for-dummy-odt')).mock(return_value=Response(200, json={'_source': self._source}))
@@ -91,3 +99,18 @@ class PdfTest(AbstractTest):
     def test_pdf_rejects_routing_with_path_traversal(self):
         response = self.client.get('/api/v1/pdf/my-index/some-id?routing=../../../traversal-target', headers=auth_headers())
         self.assertEqual(response.status_code, 400)
+
+    @respx.mock
+    def test_info_json_for_corrupt_odt(self):
+        respx.get(self.document_url('my-index', 'id-corrupt-odt-info')).mock(return_value=Response(200, json={'_source': self._source}))
+        self.create_truncated_odt('id-corrupt-odt-info')
+        response = self.client.get('/api/v1/thumbnail/my-index/id-corrupt-odt-info.json', headers=auth_headers())
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.json()['previewable'])
+
+    @respx.mock
+    def test_pdf_for_corrupt_odt(self):
+        respx.get(self.document_url('my-index', 'id-corrupt-odt-pdf')).mock(return_value=Response(200, json={'_source': self._source}))
+        self.create_truncated_odt('id-corrupt-odt-pdf')
+        response = self.client.get('/api/v1/pdf/my-index/id-corrupt-odt-pdf', headers=auth_headers())
+        self.assertEqual(response.status_code, 415)
