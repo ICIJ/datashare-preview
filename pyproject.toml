@@ -1,6 +1,6 @@
 [project]
 name = "datashare-preview"
-version = "1.6.3"
+version = "1.6.4"
 description = ""
 authors = [{name = "ICIJ", email = "engineering@icij.org"}]
 readme = "README.md"
