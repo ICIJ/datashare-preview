@@ -11,8 +11,6 @@ SPREADSHEET_TYPES = (
     'application/vnd.ms-excel',
     'text/csv',)
 
-SPREADSHEET_EXTS = ('.xls', '.xlsx', '.ods', '.csv', '.tsv')
-
 
 def is_content_type_spreadsheet(content_type: str) -> bool:
     """
@@ -25,19 +23,6 @@ def is_content_type_spreadsheet(content_type: str) -> bool:
         bool: True if it's a spreadsheet content type, False otherwise.
     """
     return content_type in SPREADSHEET_TYPES
-
-
-def is_ext_spreadsheet(ext: str) -> bool:
-    """
-    Check if the given file extension represents a spreadsheet.
-
-    Args:
-        ext (str): The file extension to check.
-
-    Returns:
-        bool: True if it's a spreadsheet file extension, False otherwise.
-    """
-    return ext in SPREADSHEET_EXTS
 
 
 def convert_spreadsheet_to_csv(file_path: str, output_dir: str) -> List[str]:

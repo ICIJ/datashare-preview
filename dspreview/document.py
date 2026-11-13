@@ -107,11 +107,6 @@ class Document:
 
 
     @property
-    def content_type(self) -> Optional[str]:
-        return self.source.get('contentType', None)
-
-
-    @property
     def content_length(self) -> int:
         return self.source.get('contentLength', -1)
 
@@ -125,7 +120,7 @@ class Document:
 
     @property
     def is_content_type_not_previewable(self) -> bool:
-        return self.content_type not in SUPPORTED_CONTENT_TYPES
+        return self.target_content_type not in SUPPORTED_CONTENT_TYPES
 
 
     @property
