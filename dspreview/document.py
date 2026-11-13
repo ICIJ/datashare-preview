@@ -293,6 +293,16 @@ class Document:
         return self.manager.get_jpeg_preview(**params)
 
 
+    def get_pdf_preview(self) -> str:
+        """
+        Convert the whole document to PDF.
+
+        Returns:
+            str: Path to the generated PDF.
+        """
+        return self.manager.get_pdf_preview(file_path=self.target_path, page=-1)
+
+
     def get_json_preview(self) -> Any:
         """
         Generate a JSON preview of the document if supported (currently for spreadsheets).

@@ -11,6 +11,7 @@ from typing import Dict, Any, Union
 
 from dspreview.cache import DocumentCache
 from dspreview.config import settings
+from dspreview.content_types import PDF_CONTENT_TYPES
 from dspreview.document import Document, DocumentTooBig, DocumentRootTooBig, DocumentNotPreviewable, DocumentUnauthorized, UnsafeDocumentIdentifier
 from dspreview.preview import get_size_height
 from dspreview.utils import is_truthy
@@ -201,6 +202,40 @@ async def thumbnail(request: Request, page: int = Query(0, ge=0)) -> Union[FileR
     except DocumentRootTooBig:
         raise HTTPException(status_code=413, detail="Document root too big")
     except (DocumentNotPreviewable, UnsupportedMimeType):
+        document.delete_target_dir()
+        raise HTTPException(status_code=415, detail="Document not previewable")
+    except DocumentUnauthorized:
+        raise HTTPException(status_code=401)
+    except UnsafeDocumentIdentifier:
+        raise HTTPException(status_code=400, detail="Invalid document identifier")
+
+
+@app.get("/api/v1/pdf/{index}/{id}", response_model=None)
+async def pdf(request: Request) -> Union[FileResponse, HTTPException]:
+    """
+    Get a document converted to PDF.
+
+    Args:
+        request (Request): The incoming request.
+
+    Returns:
+        Union[FileResponse, HTTPException]: A FileResponse containing the PDF or an HTTP exception.
+    """
+    try:
+        document = get_request_document(request)
+        cookies = get_cookies_from_forwarded_headers(request)
+        await document.download_meta(cookies)
+        await document.check_user_authorization(cookies)
+        if document.target_content_type not in PDF_CONTENT_TYPES:
+            raise HTTPException(status_code=415, detail="Document not convertible to PDF")
+        await document.download_document(cookies)
+        pdf_path = await run_in_threadpool(document.get_pdf_preview)
+        return FileResponse(pdf_path, media_type='application/pdf')
+    except DocumentTooBig:
+        raise HTTPException(status_code=413, detail="Document too big")
+    except DocumentRootTooBig:
+        raise HTTPException(status_code=413, detail="Document root too big")
+    except (DocumentNotPreviewable, UnsupportedMimeType, TimeoutExpired):
         document.delete_target_dir()
         raise HTTPException(status_code=415, detail="Document not previewable")
     except DocumentUnauthorized:
