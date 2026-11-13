@@ -2,6 +2,47 @@
 
 <!-- version list -->
 
+## v1.7.0 (2026-11-13)
+
+### Bug Fixes
+
+- Harden office document previews and share route error handling
+  ([`ed1669c`](https://github.com/ICIJ/datashare-preview/commit/ed1669cfcf247b234566b527ba9ad461770b741a))
+
+- Reject office documents libreoffice cannot convert
+  ([`38f0a18`](https://github.com/ICIJ/datashare-preview/commit/38f0a1881516c93cfec6342d0f7c6928ca7e46a7))
+
+- Reject thumbnails libreoffice cannot convert
+  ([`a2d6123`](https://github.com/ICIJ/datashare-preview/commit/a2d61235db2a366bfdf245f143e9c0dbd40b6e5c))
+
+- **ci**: Install system dependencies with apt-get again
+  ([`c7c3002`](https://github.com/ICIJ/datashare-preview/commit/c7c3002e62fb03be37a2bfe84885acd6923cc1c2))
+
+### Chores
+
+- **ci**: Test oldest and newest python only, cache apt packages
+  ([`8d4b9e0`](https://github.com/ICIJ/datashare-preview/commit/8d4b9e002e74323335fe522ad91154027504e65b))
+
+### Documentation
+
+- Add design for office documents pdf route
+  ([`96aa8d3`](https://github.com/ICIJ/datashare-preview/commit/96aa8d358ba541559ce89e139f29aac4e291fbc8))
+
+- Add implementation plan for office documents pdf route
+  ([`5723473`](https://github.com/ICIJ/datashare-preview/commit/57234732cb6788fe39ea0732eb437848e43d4060))
+
+### Features
+
+- Preview common office documents
+  ([`5c9f100`](https://github.com/ICIJ/datashare-preview/commit/5c9f1004783002b7493b457567ef9b590e67fe3e))
+
+- Serve office documents as pdf
+  ([`55bbb5f`](https://github.com/ICIJ/datashare-preview/commit/55bbb5f4be411eb6744c59bb746c68d1f882b296))
+
+- **preview**: Support office documents, spreadsheet templates and more image types
+  ([`856edfa`](https://github.com/ICIJ/datashare-preview/commit/856edfa99decf50a88c18d9ffc5746b476842708))
+
+
 ## v1.6.4 (2026-11-13)
 
 ### Bug Fixes
