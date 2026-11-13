@@ -1,11 +1,12 @@
 import os
 import httpx
+from contextlib import contextmanager
 from pathlib import Path
 from shutil import rmtree
 from tempfile import mkstemp
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Iterator
 
-from dspreview.content_types import SUPPORTED_CONTENT_TYPES
+from dspreview.content_types import PDF_CONTENT_TYPES, SUPPORTED_CONTENT_TYPES
 from dspreview.cache import THUMBNAILS_PATH, DOCUMENTS_PATH
 from dspreview.config import settings
 from dspreview.spreadsheet import is_content_type_spreadsheet, get_spreadsheet_preview
@@ -84,7 +85,8 @@ class Document:
         if self.target_path_ext == '':
             if self.target_content_type is None:
                 return ''
-            return self.manager.get_file_extension(self.target_content_type)
+            guessed_ext = self.manager.get_file_extension(self.target_content_type)
+            return guessed_ext or ''
         return self.target_path_ext
 
 
@@ -128,6 +130,11 @@ class Document:
     @property
     def is_content_type_not_previewable(self) -> bool:
         return self.target_content_type not in SUPPORTED_CONTENT_TYPES
+
+
+    @property
+    def is_content_type_pdf_convertible(self) -> bool:
+        return self.target_content_type in PDF_CONTENT_TYPES
 
 
     @property
@@ -290,7 +297,8 @@ class Document:
             str: Path to the generated JPEG preview.
         """
         params = {**params, **dict(file_path=self.target_path)}
-        return self.manager.get_jpeg_preview(**params)
+        with self.raise_not_previewable_if_conversion_failed():
+            return self.manager.get_jpeg_preview(**params)
 
 
     def get_pdf_preview(self) -> str:
@@ -300,7 +308,8 @@ class Document:
         Returns:
             str: Path to the generated PDF.
         """
-        return self.manager.get_pdf_preview(file_path=self.target_path, page=-1)
+        with self.raise_not_previewable_if_conversion_failed():
+            return self.manager.get_pdf_preview(file_path=self.target_path, page=-1)
 
 
     def get_json_preview(self) -> Any:
@@ -323,7 +332,26 @@ class Document:
         Returns:
             int: The number of pages in the document.
         """
-        return self.manager.get_page_nb(self.target_path)
+        with self.raise_not_previewable_if_conversion_failed():
+            return self.manager.get_page_nb(self.target_path)
+
+
+    @contextmanager
+    def raise_not_previewable_if_conversion_failed(self) -> Iterator[None]:
+        """
+        LibreOffice writes no output when it cannot read a document, so the
+        manager fails to open a missing file in the thumbnail directory. Any
+        other missing file (the LibreOffice binary itself, for instance) is a
+        misconfiguration and must surface.
+        """
+        try:
+            yield
+        except FileNotFoundError as error:
+            missing_path = str(error.filename)
+            is_missing_output = missing_path.startswith(self.thumbnail_directory)
+            if not is_missing_output:
+                raise
+            raise DocumentNotPreviewable() from error
     
 
 

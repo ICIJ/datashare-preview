@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi_utils.tasks import repeat_every
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import PlainTextResponse, FileResponse
+from fastapi.responses import PlainTextResponse, FileResponse, JSONResponse
 from fastapi.concurrency import run_in_threadpool
 from importlib.metadata import version
 from preview_generator.exception import UnsupportedMimeType
@@ -11,7 +11,6 @@ from typing import Dict, Any, Union
 
 from dspreview.cache import DocumentCache
 from dspreview.config import settings
-from dspreview.content_types import PDF_CONTENT_TYPES
 from dspreview.document import Document, DocumentTooBig, DocumentRootTooBig, DocumentNotPreviewable, DocumentUnauthorized, UnsafeDocumentIdentifier
 from dspreview.preview import get_size_height
 from dspreview.utils import is_truthy
@@ -81,13 +80,28 @@ async def get_preview_generator_params(request: Request, document: Document, pag
     """
     size = request.query_params.get('size', 'xs')
     height = get_size_height(size)
-    cookies = get_cookies_from_forwarded_headers(request)
-    await document.download_meta(cookies)
-    await document.check_user_authorization(cookies)
+    cookies = await authorize_document(request, document)
     await document.download_document(cookies)
     file_path = document.target_path_without_ext
     file_ext = document.target_ext
     return dict(file_path=file_path, file_ext=file_ext, height=height, page=page)
+
+
+async def authorize_document(request: Request, document: Document) -> Dict[str, str]:
+    """
+    Download the document meta and check the user can preview it.
+
+    Args:
+        request (Request): The incoming request.
+        document (Document): The requested document.
+
+    Returns:
+        Dict[str, str]: The cookies to download the document with.
+    """
+    cookies = get_cookies_from_forwarded_headers(request)
+    await document.download_meta(cookies)
+    await document.check_user_authorization(cookies)
+    return cookies
 
 
 def get_request_document(request: Request) -> Document:
@@ -122,6 +136,25 @@ app.add_middleware(
 )
 
 
+ERROR_RESPONSES = {
+    DocumentTooBig: (413, "Document too big"),
+    DocumentRootTooBig: (413, "Document root too big"),
+    DocumentUnauthorized: (401, "Unauthorized"),
+    UnsafeDocumentIdentifier: (400, "Invalid document identifier"),
+}
+
+NOT_PREVIEWABLE_ERRORS = (DocumentNotPreviewable, UnsupportedMimeType, TimeoutExpired)
+
+
+async def respond_with_error_status(_request: Request, error: Exception) -> JSONResponse:
+    status_code, detail = ERROR_RESPONSES[type(error)]
+    return JSONResponse({"detail": detail}, status_code=status_code)
+
+
+for error_class in ERROR_RESPONSES:
+    app.add_exception_handler(error_class, respond_with_error_status)
+
+
 @repeat_every(seconds=60 * 10)
 async def remove_expired_tokens_task() -> None:
     max_age = int(settings.ds_document_max_age)
@@ -153,8 +186,8 @@ async def info(request: Request, page: int = Query(0, ge=0)) -> Union[Dict[str, 
     Returns:
         Union[Dict[str, Any], HTTPException]: A dictionary containing document information or an HTTP exception.
     """
+    document = get_request_document(request)
     try:
-        document = get_request_document(request)
         await get_preview_generator_params(request, document, page)
         pages = await run_in_threadpool(document.get_manager_page_nb)
         # Disabled content preview if not requested explicitly
@@ -168,17 +201,9 @@ async def info(request: Request, page: int = Query(0, ge=0)) -> Union[Dict[str, 
             'pages': pages,
             'previewable': True,
         }
-    except (DocumentNotPreviewable, UnsupportedMimeType, TimeoutExpired, FileNotFoundError):
+    except NOT_PREVIEWABLE_ERRORS:
         document.delete_target_dir()
         return {'pages': 0, 'previewable': False}
-    except DocumentTooBig:
-        raise HTTPException(status_code=413, detail="Document too big")
-    except DocumentRootTooBig:
-        raise HTTPException(status_code=413, detail="Document root too big")
-    except DocumentUnauthorized:
-        raise HTTPException(status_code=401)
-    except UnsafeDocumentIdentifier:
-        raise HTTPException(status_code=400, detail="Invalid document identifier")
 
 
 @app.get("/api/v1/thumbnail/{index}/{id}", response_model=None)
@@ -192,22 +217,14 @@ async def thumbnail(request: Request, page: int = Query(0, ge=0)) -> Union[FileR
     Returns:
         Union[FileResponse, HTTPException]: A FileResponse containing the thumbnail or an HTTP exception.
     """
+    document = get_request_document(request)
     try:
-        document = get_request_document(request)
         params = await get_preview_generator_params(request, document, page)
         preview_path = await run_in_threadpool(document.get_jpeg_preview, params)
-        return FileResponse(preview_path)
-    except DocumentTooBig:
-        raise HTTPException(status_code=413, detail="Document too big")
-    except DocumentRootTooBig:
-        raise HTTPException(status_code=413, detail="Document root too big")
-    except (DocumentNotPreviewable, UnsupportedMimeType, TimeoutExpired, FileNotFoundError):
+    except NOT_PREVIEWABLE_ERRORS:
         document.delete_target_dir()
         raise HTTPException(status_code=415, detail="Document not previewable")
-    except DocumentUnauthorized:
-        raise HTTPException(status_code=401)
-    except UnsafeDocumentIdentifier:
-        raise HTTPException(status_code=400, detail="Invalid document identifier")
+    return FileResponse(preview_path)
 
 
 @app.get("/api/v1/pdf/{index}/{id}", response_model=None)
@@ -221,24 +238,14 @@ async def pdf(request: Request) -> Union[FileResponse, HTTPException]:
     Returns:
         Union[FileResponse, HTTPException]: A FileResponse containing the PDF or an HTTP exception.
     """
+    document = get_request_document(request)
     try:
-        document = get_request_document(request)
-        cookies = get_cookies_from_forwarded_headers(request)
-        await document.download_meta(cookies)
-        await document.check_user_authorization(cookies)
-        if document.target_content_type not in PDF_CONTENT_TYPES:
+        cookies = await authorize_document(request, document)
+        if not document.is_content_type_pdf_convertible:
             raise HTTPException(status_code=415, detail="Document not convertible to PDF")
         await document.download_document(cookies)
         pdf_path = await run_in_threadpool(document.get_pdf_preview)
-        return FileResponse(pdf_path, media_type='application/pdf')
-    except DocumentTooBig:
-        raise HTTPException(status_code=413, detail="Document too big")
-    except DocumentRootTooBig:
-        raise HTTPException(status_code=413, detail="Document root too big")
-    except (DocumentNotPreviewable, UnsupportedMimeType, TimeoutExpired, FileNotFoundError):
+    except NOT_PREVIEWABLE_ERRORS:
         document.delete_target_dir()
         raise HTTPException(status_code=415, detail="Document not previewable")
-    except DocumentUnauthorized:
-        raise HTTPException(status_code=401)
-    except UnsafeDocumentIdentifier:
-        raise HTTPException(status_code=400, detail="Invalid document identifier")
+    return FileResponse(pdf_path, media_type='application/pdf')
