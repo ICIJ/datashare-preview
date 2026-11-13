@@ -31,9 +31,6 @@ SYSTEM_DEPENDENCIES := \
 install_dependencies:
 	sudo apt-get update && sudo apt-get install -y $(SYSTEM_DEPENDENCIES)
 
-print_dependencies:
-	@echo $(SYSTEM_DEPENDENCIES)
-
 install_poetry:
 		poetry install --with dev
 
