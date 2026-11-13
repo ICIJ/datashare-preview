@@ -11,6 +11,8 @@ SPREADSHEET_TYPES = (
     'application/vnd.ms-excel',
     'text/csv',)
 
+SSCONVERT_TIMEOUT_SECONDS = 60
+
 
 def is_content_type_spreadsheet(content_type: str) -> bool:
     """
@@ -39,8 +41,8 @@ def convert_spreadsheet_to_csv(file_path: str, output_dir: str) -> List[str]:
     cmd = 'ssconvert'
     exporter = 'Gnumeric_stf:stf_csv'
     output_files = output_dir + '/%s'
-    subprocess.call([cmd, '--export-type', exporter,
-                    file_path, output_files, '-S'])
+    subprocess.run([cmd, '--export-type', exporter,
+                    file_path, output_files, '-S'], timeout=SSCONVERT_TIMEOUT_SECONDS)
     return glob.glob(output_dir + '/*')
 
 

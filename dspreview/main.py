@@ -6,6 +6,7 @@ from fastapi.responses import PlainTextResponse, FileResponse
 from fastapi.concurrency import run_in_threadpool
 from importlib.metadata import version
 from preview_generator.exception import UnsupportedMimeType
+from subprocess import TimeoutExpired
 from typing import Dict, Any, Union
 
 from dspreview.cache import DocumentCache
@@ -166,7 +167,7 @@ async def info(request: Request, page: int = Query(0, ge=0)) -> Union[Dict[str, 
             'pages': pages,
             'previewable': True,
         }
-    except (DocumentNotPreviewable, UnsupportedMimeType):
+    except (DocumentNotPreviewable, UnsupportedMimeType, TimeoutExpired):
         document.delete_target_dir()
         return {'pages': 0, 'previewable': False}
     except DocumentTooBig:
