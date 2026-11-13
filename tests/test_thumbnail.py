@@ -1,3 +1,4 @@
+import os
 import respx
 
 from httpx import Response
@@ -109,3 +110,12 @@ class ThumbnailTest(AbstractTest):
         response = self.client.get('/api/v1/thumbnail/my-index/id-for-dummy-without-extension.json', headers=auth_headers())
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.json().get('previewable'))
+
+    def test_thumbnail_rejects_routing_with_path_traversal(self):
+        response = self.client.get('/api/v1/thumbnail/my-index/some-id?routing=../../../traversal-target', headers=auth_headers())
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(os.path.exists('/traversal-target'))
+
+    def test_thumbnail_rejects_parent_directory_id(self):
+        response = self.client.get('/api/v1/thumbnail/my-index/%2E%2E', headers=auth_headers())
+        self.assertEqual(response.status_code, 400)

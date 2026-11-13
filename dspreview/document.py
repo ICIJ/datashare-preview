@@ -9,7 +9,7 @@ from dspreview.cache import THUMBNAILS_PATH, DOCUMENTS_PATH
 from dspreview.config import settings
 from dspreview.spreadsheet import is_content_type_spreadsheet, get_spreadsheet_preview
 from preview_generator.manager import PreviewManager
-from urllib.parse import urljoin
+from urllib.parse import quote, urljoin
 
 
 class Document:
@@ -27,6 +27,10 @@ class Document:
             id (str): Unique identifier for the document.
             routing (str, optional): The routing associated with the document. Defaults to None.
         """
+        raise_if_unsafe_identifier(index)
+        raise_if_unsafe_identifier(id)
+        if routing is not None:
+            raise_if_unsafe_identifier(routing)
         self.index = index
         self.id = id
         self.routing = routing
@@ -44,7 +48,7 @@ class Document:
         # Optional routing parameter
         if self.routing is not None:
             url = urljoin(
-                url, '?_source=contentLength,contentType,path&routing=%s' % self.routing)
+                url, '?_source=contentLength,contentType,path&routing=%s' % quote(self.routing, safe=''))
         return url
 
 
@@ -55,7 +59,7 @@ class Document:
                       (self.index, self.id))
         # Optional routing parameter
         if self.routing is not None:
-            url = urljoin(url, '?routing=%s' % self.routing)
+            url = urljoin(url, '?routing=%s' % quote(self.routing, safe=''))
         return url
 
 
@@ -286,6 +290,25 @@ class Document:
         """
         return self.manager.get_page_nb(self.target_path)
     
+
+
+def raise_if_unsafe_identifier(identifier: str) -> None:
+    """
+    Index, id and routing become directory names in the cache, so they must not
+    point outside of it.
+    """
+    is_relative_directory = identifier in ('.', '..')
+    has_path_separator = '/' in identifier or os.sep in identifier
+    if is_relative_directory or has_path_separator:
+        raise UnsafeDocumentIdentifier(identifier)
+
+
+class UnsafeDocumentIdentifier(Exception):
+    """Exception raised when an index, id or routing could escape the cache directory."""
+
+    def __init__(self, identifier: str) -> None:
+        super().__init__(f'Unsafe document identifier: {identifier!r}')
+        self.identifier = identifier
 
 
 class DocumentUnauthorized(Exception):

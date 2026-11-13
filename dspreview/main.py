@@ -9,7 +9,7 @@ from typing import Dict, Any, Union
 
 from dspreview.cache import DocumentCache
 from dspreview.config import settings
-from dspreview.document import Document, DocumentTooBig, DocumentRootTooBig, DocumentNotPreviewable, DocumentUnauthorized
+from dspreview.document import Document, DocumentTooBig, DocumentRootTooBig, DocumentNotPreviewable, DocumentUnauthorized, UnsafeDocumentIdentifier
 from dspreview.preview import get_size_height
 from dspreview.utils import is_truthy
 
@@ -174,6 +174,8 @@ async def info(request: Request) -> Union[Dict[str, Any], HTTPException]:
         raise HTTPException(status_code=413, detail="Document root too big")
     except DocumentUnauthorized:
         raise HTTPException(status_code=401)
+    except UnsafeDocumentIdentifier:
+        raise HTTPException(status_code=400, detail="Invalid document identifier")
 
 
 @app.get("/api/v1/thumbnail/{index}/{id}", response_model=None)
@@ -200,3 +202,5 @@ async def thumbnail(request: Request) -> Union[FileResponse, HTTPException]:
         raise HTTPException(status_code=415, detail="Document not previewable")
     except DocumentUnauthorized:
         raise HTTPException(status_code=401)
+    except UnsafeDocumentIdentifier:
+        raise HTTPException(status_code=400, detail="Invalid document identifier")
