@@ -7,8 +7,11 @@ from typing import List, Dict
 
 SPREADSHEET_TYPES = (
     'application/vnd.oasis.opendocument.spreadsheet',
+    'application/vnd.oasis.opendocument.spreadsheet-template',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.template',
     'application/vnd.ms-excel',
+    'application/vnd.ms-excel.sheet.macroenabled.12',
     'text/csv',)
 
 SSCONVERT_TIMEOUT_SECONDS = 60
