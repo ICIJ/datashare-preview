@@ -31,3 +31,8 @@ httpx2 = "^2.16.0"
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.semantic_release]
+version_toml = ["pyproject.toml:project.version"]
+commit_message = "build: bump to {version}"
+tag_format = "{version}"
