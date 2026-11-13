@@ -6,28 +6,33 @@ PWD := `pwd`
 CURRENT_VERSION ?= `poetry version -s`
 SEMVERS := major minor patch
 
+SYSTEM_DEPENDENCIES := \
+	dcraw \
+	ffmpeg \
+	ghostscript \
+	gnumeric \
+	imagemagick \
+	inkscape \
+	libfile-mimeinfo-perl \
+	libgomp1 \
+	libimage-exiftool-perl \
+	libjpeg-dev \
+	libmagic1 \
+	libreoffice \
+	libsecret-1-0 \
+	poppler-utils \
+	qpdf \
+	scribus \
+	webp \
+	xterm \
+	xvfb \
+	zlib1g-dev
+
 install_dependencies:
-	sudo apt-get update && sudo apt-get install -y \
-			dcraw \
-			ffmpeg \
-			ghostscript \
-			gnumeric \
-			imagemagick \
-			inkscape \
-			libfile-mimeinfo-perl \
-			libgomp1 \
-			libimage-exiftool-perl \
-			libjpeg-dev \
-			libmagic1 \
-			libreoffice \
-			libsecret-1-0 \
-			poppler-utils \
-			qpdf \
-			scribus \
-			webp \
-			xterm \
-			xvfb \
-			zlib1g-dev
+	sudo apt-get update && sudo apt-get install -y $(SYSTEM_DEPENDENCIES)
+
+print_dependencies:
+	@echo $(SYSTEM_DEPENDENCIES)
 
 install_poetry:
 		poetry install --with dev

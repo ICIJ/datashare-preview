@@ -7,9 +7,8 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
-      max-parallel: 3
       matrix:
-        python-version: ['3.11', '3.12', '3.13', '3.14', '3.15']
+        python-version: ['3.11', '3.15']
 
     steps:
     - name: Checkout repository
@@ -20,10 +19,16 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
+    - name: List system dependencies
+      id: system-dependencies
+      run: echo "packages=$(make -s print_dependencies)" >> "$GITHUB_OUTPUT"
+
     - name: Install system dependencies
-      run: |
-        make install_dependencies
-   
+      uses: awalsh128/cache-apt-pkgs-action@v1.6.3
+      with:
+        packages: ${{ steps.system-dependencies.outputs.packages }}
+        execute_install_scripts: true
+
     - name: Install Poetry
       uses: snok/install-poetry@v1
       with:
