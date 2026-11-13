@@ -1,14 +1,14 @@
-FROM python:3.13-bookworm AS requirements
+FROM python:3.15-trixie AS requirements
 
 WORKDIR /tmp
 
-RUN pip install poetry==1.3
+RUN pip install poetry==2.5.1 poetry-plugin-export==1.10.1
 COPY ./pyproject.toml ./poetry.lock* /tmp/
 
 RUN poetry export -f requirements.txt --output requirements.txt --without-hashes
 
 
-FROM python:3.13-bookworm
+FROM python:3.15-trixie
 
 RUN apt-get update && apt-get install -y \
   dcraw \
@@ -33,10 +33,10 @@ RUN apt-get update && apt-get install -y \
   zlib1g-dev
 
 WORKDIR /tmp
-ADD https://exiftool.org/Image-ExifTool-13.39.tar.gz .
+ADD https://downloads.sourceforge.net/project/exiftool/Image-ExifTool-13.63.tar.gz .
 
-RUN gzip -dc Image-ExifTool-13.39.tar.gz | tar -xf - ; \
-  cd Image-ExifTool-13.39 ; \
+RUN gzip -dc Image-ExifTool-13.63.tar.gz | tar -xf - ; \
+  cd Image-ExifTool-13.63 ; \
   perl Makefile.PL ; \
   make install
 
