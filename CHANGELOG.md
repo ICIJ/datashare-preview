@@ -2,6 +2,19 @@
 
 <!-- version list -->
 
+## v1.7.2 (2026-11-16)
+
+### Bug Fixes
+
+- **document**: Use content type extension for embedded documents
+  ([`0c94cdd`](https://github.com/ICIJ/datashare-preview/commit/0c94cdd234dd98819c38b3fcb00964d4174e29b3))
+
+### Chores
+
+- **mise**: Pin poetry 2.5.1 and python 3.15
+  ([`dbbf9e2`](https://github.com/ICIJ/datashare-preview/commit/dbbf9e203d7fa6028af4b418080c257d073c647a))
+
+
 ## v1.7.1 (2026-11-16)
 
 ### Bug Fixes
