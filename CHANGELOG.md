@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.7.1 (2026-11-16)
+
+### Bug Fixes
+
+- **docker**: Install the project so / shows the app version
+  ([`62f8aba`](https://github.com/ICIJ/datashare-preview/commit/62f8aba7c433cbc935cc1c01539324cee2a6e06a))
+
+
 ## v1.7.0 (2026-11-13)
 
 ### Bug Fixes
