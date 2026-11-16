@@ -82,7 +82,7 @@ class Document:
 
     @property
     def target_ext(self) -> str:
-        if self.target_path_ext == '':
+        if self.is_embedded or self.target_path_ext == '':
             if self.target_content_type is None:
                 return ''
             guessed_ext = self.manager.get_file_extension(self.target_content_type)

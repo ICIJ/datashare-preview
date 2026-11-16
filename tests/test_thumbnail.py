@@ -153,3 +153,20 @@ class ThumbnailTest(AbstractTest):
             response = self.client.get('/api/v1/thumbnail/my-index/id-too-big', headers=auth_headers())
         self.assertEqual(response.status_code, 413)
         self.assertFalse(os.path.exists('/tmp/documents/my-index/id-too-big/raw.jpg'))
+
+    @respx.mock
+    def test_thumbnail_of_embedded_document_uses_its_content_type_extension(self):
+        embedded_source = {**self._source, 'path': 'archive.zip'}
+        root_source = {'contentType': 'application/zip', 'path': 'archive.zip', 'contentLength': 1234}
+        mocked_root_url = self.document_url('my-index', 'zip-root-id')
+        respx.get(mocked_root_url).mock(return_value=Response(200, json={'_source': root_source}))
+        mocked_info_url = self.document_url('my-index', 'id-embedded-in-zip')
+        respx.get(mocked_info_url).mock(return_value=Response(200, json={'_source': embedded_source}))
+        mocked_download_url = self.datashare_url('/api/my-index/documents/src/id-embedded-in-zip')
+        dummy_jpg_content = read_resource('dummy.jpg')
+        respx.get(mocked_download_url).mock(return_value=Response(200, content=dummy_jpg_content))
+        rmtree('/tmp/documents/my-index/id-embedded-in-zip', ignore_errors=True)
+
+        response = self.client.get('/api/v1/thumbnail/my-index/id-embedded-in-zip?routing=zip-root-id', headers=auth_headers())
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(os.path.exists('/tmp/documents/my-index/id-embedded-in-zip/raw.jpg'))
