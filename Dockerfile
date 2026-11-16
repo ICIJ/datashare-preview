@@ -46,6 +46,7 @@ COPY --from=requirements /tmp/requirements.txt .
 RUN  pip install --no-cache-dir --upgrade -r /var/www/app/requirements.txt
 
 COPY . .
+RUN pip install --no-cache-dir --no-deps .
 
 RUN useradd -ms /bin/bash xterm
 RUN mkdir --mode 777 /var/www/app/cache
