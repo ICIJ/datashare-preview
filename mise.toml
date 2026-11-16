@@ -1,0 +1,3 @@
+[tools]
+"pipx:poetry" = "2.5.1"
+python = "3.15"
