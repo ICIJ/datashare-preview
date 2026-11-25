@@ -11,9 +11,12 @@ from dspreview.cache import THUMBNAILS_PATH, DOCUMENTS_PATH
 from dspreview.config import settings
 from dspreview.spreadsheet import is_content_type_spreadsheet, get_spreadsheet_preview
 from preview_generator.manager import PreviewManager
+from preview_generator.preview.builder.video__ffmpeg import VideoPreviewBuilderFFMPEG
 from urllib.parse import quote, urljoin
 
 REQUEST_TIMEOUT_SECONDS = 30
+
+VideoPreviewBuilderFFMPEG.page_nb = 1
 
 
 class Document:

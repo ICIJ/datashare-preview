@@ -1,3 +1,5 @@
+from preview_generator.preview.builder.video__ffmpeg import VideoPreviewBuilderFFMPEG
+
 PDF_CONTENT_TYPES = (
   'application/msword',
   'application/vnd.ms-powerpoint',
@@ -53,4 +55,5 @@ SUPPORTED_CONTENT_TYPES = (
   'image/x-xbitmap',
   'text/csv',
   'text/rtf',
+  *VideoPreviewBuilderFFMPEG.get_supported_mimetypes(),
 )

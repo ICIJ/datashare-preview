@@ -25,6 +25,11 @@ SPREADSHEET_CONTENT_TYPES = {
   'application/vnd.openxmlformats-officedocument.spreadsheetml.template': 'dummy.xltx',
 }
 
+VIDEO_CONTENT_TYPES = {
+  'video/quicktime': 'dummy.mov',
+  'video/mp4': 'dummy.mp4',
+}
+
 
 class ContentTypesTest(AbstractTest):
 
@@ -39,7 +44,7 @@ class ContentTypesTest(AbstractTest):
 
     @respx.mock
     def test_thumbnail(self):
-        all_content_types = {**DOCUMENT_CONTENT_TYPES, **SPREADSHEET_CONTENT_TYPES}
+        all_content_types = {**DOCUMENT_CONTENT_TYPES, **SPREADSHEET_CONTENT_TYPES, **VIDEO_CONTENT_TYPES}
         for content_type, resource_name in all_content_types.items():
             with self.subTest(content_type=content_type):
                 document_id = self.mock_document(resource_name, content_type)
@@ -55,3 +60,20 @@ class ContentTypesTest(AbstractTest):
                 response = self.client.get(f'/api/v1/thumbnail/my-index/{document_id}.json?include-content=1', headers=auth_headers())
                 self.assertEqual(response.status_code, 200)
                 self.assertTrue(response.json().get('content'))
+
+    @respx.mock
+    def test_video_info_has_one_page(self):
+        for content_type, resource_name in VIDEO_CONTENT_TYPES.items():
+            with self.subTest(content_type=content_type):
+                document_id = self.mock_document(resource_name, content_type)
+                response = self.client.get(f'/api/v1/thumbnail/my-index/{document_id}.json', headers=auth_headers())
+                self.assertEqual(response.json().get('previewable'), True)
+                self.assertEqual(response.json().get('pages'), 1)
+
+    @respx.mock
+    def test_video_thumbnail_any_page_is_poster_frame(self):
+        document_id = self.mock_document('dummy.mov', 'video/quicktime')
+        first = self.client.get(f'/api/v1/thumbnail/my-index/{document_id}?page=0', headers=auth_headers())
+        other = self.client.get(f'/api/v1/thumbnail/my-index/{document_id}?page=3', headers=auth_headers())
+        self.assertEqual(other.status_code, 200)
+        self.assertEqual(other.content, first.content)
