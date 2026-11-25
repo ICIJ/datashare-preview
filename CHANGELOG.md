@@ -2,6 +2,27 @@
 
 <!-- version list -->
 
+## v1.8.0 (2026-11-25)
+
+### Bug Fixes
+
+- **preview**: Answer 415 for videos without a readable video stream
+  ([`e350ed1`](https://github.com/ICIJ/datashare-preview/commit/e350ed1d14e31d679895b5e4b90514a1a7d33f2d))
+
+- **preview**: Bound video previews to one probed poster frame with a timeout
+  ([`8c74894`](https://github.com/ICIJ/datashare-preview/commit/8c74894e798715f4a1d5050522cde669ad0683f9))
+
+### Documentation
+
+- Add video preview design and plan
+  ([`f634e41`](https://github.com/ICIJ/datashare-preview/commit/f634e41b51349fcc0b8cdbaeb569e57e892575e6))
+
+### Features
+
+- **preview**: Preview video documents with a poster frame
+  ([`39f6340`](https://github.com/ICIJ/datashare-preview/commit/39f6340736de0c63bb0093801239c12b8bfe2849))
+
+
 ## v1.7.2 (2026-11-16)
 
 ### Bug Fixes
