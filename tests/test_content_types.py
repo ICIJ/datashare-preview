@@ -34,7 +34,7 @@ VIDEO_CONTENT_TYPES = {
 class ContentTypesTest(AbstractTest):
 
     def mock_document(self, resource_name, content_type):
-        document_id = content_type.replace('/', '-').replace('.', '-')
+        document_id = f'{content_type}-{resource_name}'.replace('/', '-').replace('.', '-')
         source = {'contentType': content_type, 'path': resource_name, 'contentLength': 123}
         mocked_url = self.document_url('my-index', document_id)
         respx.get(mocked_url).mock(return_value=Response(200, json={'_source': source}))
@@ -77,3 +77,12 @@ class ContentTypesTest(AbstractTest):
         other = self.client.get(f'/api/v1/thumbnail/my-index/{document_id}?page=3', headers=auth_headers())
         self.assertEqual(other.status_code, 200)
         self.assertEqual(other.content, first.content)
+
+    @respx.mock
+    def test_video_thumbnail_not_previewable(self):
+        resource_names = ['dummy-audio-only.mov', 'dummy-corrupt.mov']
+        for resource_name in resource_names:
+            with self.subTest(resource_name=resource_name):
+                document_id = self.mock_document(resource_name, 'video/quicktime')
+                response = self.client.get(f'/api/v1/thumbnail/my-index/{document_id}', headers=auth_headers())
+                self.assertEqual(response.status_code, 415)
