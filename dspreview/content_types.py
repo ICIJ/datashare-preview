@@ -1,4 +1,6 @@
-from preview_generator.preview.builder.video__ffmpeg import VideoPreviewBuilderFFMPEG
+from dspreview.video import VideoPosterBuilder
+
+VIDEO_CONTENT_TYPES = tuple(VideoPosterBuilder.get_supported_mimetypes())
 
 PDF_CONTENT_TYPES = (
   'application/msword',
@@ -55,5 +57,5 @@ SUPPORTED_CONTENT_TYPES = (
   'image/x-xbitmap',
   'text/csv',
   'text/rtf',
-  *VideoPreviewBuilderFFMPEG.get_supported_mimetypes(),
+  *VIDEO_CONTENT_TYPES,
 )

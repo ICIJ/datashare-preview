@@ -5,10 +5,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse, FileResponse, JSONResponse
 from fastapi.concurrency import run_in_threadpool
 from importlib.metadata import version
-from ffmpeg import Error as FFmpegError
 from preview_generator.exception import UnsupportedMimeType
 from preview_generator.preview.builder.video__ffmpeg import NoVideoStream
-from subprocess import TimeoutExpired
+from subprocess import CalledProcessError, TimeoutExpired
 from typing import Dict, Any, Union
 
 from dspreview.cache import DocumentCache
@@ -145,7 +144,7 @@ ERROR_RESPONSES = {
     UnsafeDocumentIdentifier: (400, "Invalid document identifier"),
 }
 
-NOT_PREVIEWABLE_ERRORS = (DocumentNotPreviewable, UnsupportedMimeType, TimeoutExpired, NoVideoStream, FFmpegError)
+NOT_PREVIEWABLE_ERRORS = (DocumentNotPreviewable, UnsupportedMimeType, TimeoutExpired, NoVideoStream, CalledProcessError)
 
 
 async def respond_with_error_status(_request: Request, error: Exception) -> JSONResponse:

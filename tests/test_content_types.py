@@ -1,6 +1,12 @@
 import respx
 
+from glob import glob
+from shutil import rmtree
+from unittest.mock import patch
+
 from httpx import Response
+from dspreview import video
+from dspreview.document import Document
 from .test_abstract import auth_headers, create_file_ondisk_from_resource
 from .test_abstract import AbstractTest
 
@@ -40,6 +46,8 @@ class ContentTypesTest(AbstractTest):
         respx.get(mocked_url).mock(return_value=Response(200, json={'_source': source}))
         extension = resource_name.split('.')[-1]
         create_file_ondisk_from_resource(resource_name, f'/tmp/documents/my-index/{document_id}/raw.{extension}')
+        thumbnail_directory = Document('my-index', document_id).thumbnail_directory
+        rmtree(thumbnail_directory, ignore_errors=True)
         return document_id
 
     @respx.mock
@@ -77,6 +85,43 @@ class ContentTypesTest(AbstractTest):
         other = self.client.get(f'/api/v1/thumbnail/my-index/{document_id}?page=3', headers=auth_headers())
         self.assertEqual(other.status_code, 200)
         self.assertEqual(other.content, first.content)
+
+    @respx.mock
+    def test_video_thumbnail_any_page_reuses_poster_frame(self):
+        document_id = self.mock_document('dummy.mov', 'video/quicktime')
+        self.client.get(f'/api/v1/thumbnail/my-index/{document_id}?page=0', headers=auth_headers())
+        self.client.get(f'/api/v1/thumbnail/my-index/{document_id}?page=3', headers=auth_headers())
+        thumbnail_directory = Document('my-index', document_id).thumbnail_directory
+        thumbnails = glob(f'{thumbnail_directory}/*.jpeg')
+        self.assertEqual(len(thumbnails), 1)
+
+    @respx.mock
+    def test_video_info_not_previewable(self):
+        resource_names = ['dummy-audio-only.mov', 'dummy-corrupt.mov']
+        for resource_name in resource_names:
+            with self.subTest(resource_name=resource_name):
+                document_id = self.mock_document(resource_name, 'video/quicktime')
+                response = self.client.get(f'/api/v1/thumbnail/my-index/{document_id}.json', headers=auth_headers())
+                self.assertEqual(response.json().get('previewable'), False)
+
+    @respx.mock
+    def test_video_thumbnail_without_duration(self):
+        real_probe = video.probe
+        def probe_without_duration(file_path):
+            probe_data = real_probe(file_path)
+            del probe_data['format']['duration']
+            return probe_data
+        document_id = self.mock_document('dummy.mov', 'video/quicktime')
+        with patch('dspreview.video.probe', probe_without_duration):
+            response = self.client.get(f'/api/v1/thumbnail/my-index/{document_id}', headers=auth_headers())
+        self.assertEqual(response.status_code, 200)
+
+    @respx.mock
+    def test_video_thumbnail_timeout(self):
+        document_id = self.mock_document('dummy.mov', 'video/quicktime')
+        with patch('dspreview.video.TIMEOUT_SECONDS', 0.001):
+            response = self.client.get(f'/api/v1/thumbnail/my-index/{document_id}', headers=auth_headers())
+        self.assertEqual(response.status_code, 415)
 
     @respx.mock
     def test_video_thumbnail_not_previewable(self):

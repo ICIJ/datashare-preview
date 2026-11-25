@@ -6,17 +6,14 @@ from shutil import rmtree
 from tempfile import mkstemp
 from typing import Optional, Dict, Any, Iterator
 
-from dspreview.content_types import PDF_CONTENT_TYPES, SUPPORTED_CONTENT_TYPES
+from dspreview.content_types import PDF_CONTENT_TYPES, SUPPORTED_CONTENT_TYPES, VIDEO_CONTENT_TYPES
 from dspreview.cache import THUMBNAILS_PATH, DOCUMENTS_PATH
 from dspreview.config import settings
 from dspreview.spreadsheet import is_content_type_spreadsheet, get_spreadsheet_preview
 from preview_generator.manager import PreviewManager
-from preview_generator.preview.builder.video__ffmpeg import VideoPreviewBuilderFFMPEG
 from urllib.parse import quote, urljoin
 
 REQUEST_TIMEOUT_SECONDS = 30
-
-VideoPreviewBuilderFFMPEG.page_nb = 1
 
 
 class Document:
@@ -133,6 +130,11 @@ class Document:
     @property
     def is_content_type_not_previewable(self) -> bool:
         return self.target_content_type not in SUPPORTED_CONTENT_TYPES
+
+
+    @property
+    def is_content_type_video(self) -> bool:
+        return self.target_content_type in VIDEO_CONTENT_TYPES
 
 
     @property
@@ -300,6 +302,8 @@ class Document:
             str: Path to the generated JPEG preview.
         """
         params = {**params, **dict(file_path=self.target_path)}
+        if self.is_content_type_video:
+            params['page'] = 0
         with self.raise_not_previewable_if_conversion_failed():
             return self.manager.get_jpeg_preview(**params)
 
